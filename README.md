@@ -14,10 +14,9 @@ GUI for [Hurl](https://hurl.dev/).
 - Multiple requests per file.
 - Response assertion.
 - Env vars support.
-- Standard file format. Not coupled with the app. We can use the fiels without the desktop app.
+- Requests are stored in Hurl file. Hence, not coupled with the app. We can use those files without the app as well.
 
 ## ToDo
 
 - Convert to SvelteKit.
 - Show editor for env var file.
-- Save UI preferences like selected env, etc.
