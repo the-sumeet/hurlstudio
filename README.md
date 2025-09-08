@@ -20,3 +20,5 @@ GUI for [Hurl](https://hurl.dev/).
 
 - Convert to SvelteKit.
 - Show editor for env var file.
+- Syntax highilghting for hurl files.
+- Set ace editor mode when markdown file is opened.
