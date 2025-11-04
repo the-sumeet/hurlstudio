@@ -77,6 +77,13 @@
       }
     }
   });
+
+  // Update theme when it changes
+  $effect(() => {
+    if (editor) {
+      monaco.editor.setTheme(theme);
+    }
+  });
 </script>
 
 <div bind:this={editorContainer} class="editor-container"></div>

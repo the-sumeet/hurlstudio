@@ -2,6 +2,7 @@
 	import * as Resizable from "$lib/components/ui/resizable/index.js";
 	import MonacoEditor from "$lib/components/MonacoEditor.svelte";
 	import { fileStore } from '$lib/stores/fileStore.svelte';
+	import { themeStore } from '$lib/stores/themeStore.svelte';
 	import { SaveFile } from "$lib/wailsjs/go/main/App";
 
 	let editorContent = $derived(fileStore.content);
@@ -14,6 +15,9 @@
 		if (ext === 'hurl') return 'plaintext'; // We can add custom Hurl syntax later
 		return 'plaintext';
 	});
+
+	// Determine editor theme based on current theme
+	let editorTheme = $derived(themeStore.current === 'dark' ? 'vs-dark' : 'vs');
 
 	async function handleContentChange(newContent: string) {
 		if (fileStore.currentFile) {
@@ -38,7 +42,7 @@
 					<MonacoEditor
 						value={editorContent}
 						{language}
-						theme="vs-dark"
+						theme={editorTheme}
 						onchange={handleContentChange}
 					/>
 				</div>
