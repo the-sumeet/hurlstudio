@@ -3,7 +3,8 @@
 	import FileIcon from "@lucide/svelte/icons/file";
 	import InboxIcon from "@lucide/svelte/icons/inbox";
 	import SendIcon from "@lucide/svelte/icons/send";
-	import Trash2Icon from "@lucide/svelte/icons/trash-2";
+	import SunIcon from "@lucide/svelte/icons/sun";
+	import MoonIcon from "@lucide/svelte/icons/moon";
 	import AudioWaveformIcon from "@lucide/svelte/icons/audio-waveform";
 	import BookOpenIcon from "@lucide/svelte/icons/book-open";
 	import BotIcon from "@lucide/svelte/icons/bot";
@@ -22,6 +23,7 @@
 	import type { ComponentProps } from "svelte";
 	import NavMain from "./nav-main.svelte";
 	import NavFiles from "./nav-files.svelte";
+	import { themeStore } from '$lib/stores/themeStore.svelte';
 
 	// This is sample data
 	const data = {
@@ -87,12 +89,6 @@
 				title: "Junk",
 				url: "#",
 				icon: ArchiveXIcon,
-				isActive: false,
-			},
-			{
-				title: "Trash",
-				url: "#",
-				icon: Trash2Icon,
 				isActive: false,
 			},
 		],
@@ -239,6 +235,26 @@
 								</Sidebar.MenuButton>
 							</Sidebar.MenuItem>
 						{/each}
+						<Sidebar.MenuItem>
+							<Sidebar.MenuButton
+								tooltipContentProps={{
+									hidden: false,
+								}}
+								onclick={() => themeStore.toggle()}
+								class="px-2.5 md:px-2"
+							>
+								{#snippet tooltipContent()}
+									Toggle Theme
+								{/snippet}
+								{#if themeStore.current === 'dark'}
+									<SunIcon />
+									<span>Light</span>
+								{:else}
+									<MoonIcon />
+									<span>Dark</span>
+								{/if}
+							</Sidebar.MenuButton>
+						</Sidebar.MenuItem>
 					</Sidebar.Menu>
 				</Sidebar.GroupContent>
 			</Sidebar.Group>
