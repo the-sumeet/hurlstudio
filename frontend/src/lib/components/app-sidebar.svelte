@@ -243,9 +243,9 @@
 				</Sidebar.GroupContent>
 			</Sidebar.Group>
 		</Sidebar.Content>
-		<Sidebar.Footer>
+		<!-- <Sidebar.Footer>
 			<NavUser user={data.user} />
-		</Sidebar.Footer>
+		</Sidebar.Footer> -->
 	</Sidebar.Root>
 
 
@@ -254,9 +254,9 @@
 		<Sidebar.Content>
 			<NavFiles />
 		</Sidebar.Content>
-		<Sidebar.Footer>
+		<!-- <Sidebar.Footer>
 			<NavUser user={data.user} />
-		</Sidebar.Footer>
+		</Sidebar.Footer> -->
 		<Sidebar.Rail />
 	</Sidebar.Root>
 
