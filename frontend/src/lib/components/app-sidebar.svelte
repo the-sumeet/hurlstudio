@@ -21,7 +21,7 @@
 	import { Switch } from "$lib/components/ui/switch/index.js";
 	import type { ComponentProps } from "svelte";
 	import NavMain from "./nav-main.svelte";
-	import NavProjects from "./nav-projects.svelte";
+	import NavFiles from "./nav-files.svelte";
 
 	// This is sample data
 	const data = {
@@ -252,7 +252,7 @@
 
 	<Sidebar.Root collapsible="none" class="hidden flex-1 md:flex">
 		<Sidebar.Content>
-			<NavProjects projects={data.projects} />
+			<NavFiles />
 		</Sidebar.Content>
 		<Sidebar.Footer>
 			<NavUser user={data.user} />
