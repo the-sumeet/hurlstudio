@@ -13,7 +13,7 @@ import AppSidebar from "$lib/components/app-sidebar.svelte";
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<Sidebar.Provider style="--sidebar-width: 350px;">
+<Sidebar.Provider style="--sidebar-width: 300px;">
 	<AppSidebar />
 	<Sidebar.Inset>
 		<header class="bg-background sticky top-0 flex shrink-0 items-center gap-2 border-b p-4">

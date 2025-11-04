@@ -1,12 +1,64 @@
-<script lang="ts" module>
+<script lang="ts">
 	import ArchiveXIcon from "@lucide/svelte/icons/archive-x";
 	import FileIcon from "@lucide/svelte/icons/file";
 	import InboxIcon from "@lucide/svelte/icons/inbox";
 	import SendIcon from "@lucide/svelte/icons/send";
 	import Trash2Icon from "@lucide/svelte/icons/trash-2";
+	import AudioWaveformIcon from "@lucide/svelte/icons/audio-waveform";
+	import BookOpenIcon from "@lucide/svelte/icons/book-open";
+	import BotIcon from "@lucide/svelte/icons/bot";
+	import ChartPieIcon from "@lucide/svelte/icons/chart-pie";
+	import CommandIcon from "@lucide/svelte/icons/command";
+	import FrameIcon from "@lucide/svelte/icons/frame";
+	import GalleryVerticalEndIcon from "@lucide/svelte/icons/gallery-vertical-end";
+	import MapIcon from "@lucide/svelte/icons/map";
+	import Settings2Icon from "@lucide/svelte/icons/settings-2";
+	import SquareTerminalIcon from "@lucide/svelte/icons/square-terminal";
+	import NavUser from "./nav-user.svelte";
+	import { Label } from "$lib/components/ui/label/index.js";
+	import { useSidebar } from "$lib/components/ui/sidebar/context.svelte.js";
+	import * as Sidebar from "$lib/components/ui/sidebar/index.js";
+	import { Switch } from "$lib/components/ui/switch/index.js";
+	import type { ComponentProps } from "svelte";
+	import NavMain from "./nav-main.svelte";
+	import NavProjects from "./nav-projects.svelte";
 
 	// This is sample data
 	const data = {
+		teams: [
+      {
+        name: "Acme Inc",
+        logo: GalleryVerticalEndIcon,
+        plan: "Enterprise",
+      },
+      {
+        name: "Acme Corp.",
+        logo: AudioWaveformIcon,
+        plan: "Startup",
+      },
+      {
+        name: "Evil Corp.",
+        logo: CommandIcon,
+        plan: "Free",
+      },
+    ],
+		projects: [
+      {
+        name: "Design Engineering",
+        url: "#",
+        icon: FrameIcon,
+      },
+      {
+        name: "Sales & Marketing",
+        url: "#",
+        icon: ChartPieIcon,
+      },
+      {
+        name: "Travel",
+        url: "#",
+        icon: MapIcon,
+      },
+    ],
 		user: {
 			name: "shadcn",
 			email: "m@example.com",
@@ -117,16 +169,6 @@
 			},
 		],
 	};
-</script>
-
-<script lang="ts">
-	import NavUser from "./nav-user.svelte";
-	import { Label } from "$lib/components/ui/label/index.js";
-	import { useSidebar } from "$lib/components/ui/sidebar/context.svelte.js";
-	import * as Sidebar from "$lib/components/ui/sidebar/index.js";
-	import { Switch } from "$lib/components/ui/switch/index.js";
-	import CommandIcon from "@lucide/svelte/icons/command";
-	import type { ComponentProps } from "svelte";
 
 	let { ref = $bindable(null), ...restProps }: ComponentProps<typeof Sidebar.Root> = $props();
 
@@ -134,6 +176,7 @@
 	let mails = $state(data.mails);
 	const sidebar = useSidebar();
 </script>
+
 
 <Sidebar.Root
 	bind:ref
@@ -205,41 +248,16 @@
 		</Sidebar.Footer>
 	</Sidebar.Root>
 
-	<!-- This is the second sidebar -->
-	<!-- We disable collapsible and let it fill remaining space -->
+
+
 	<Sidebar.Root collapsible="none" class="hidden flex-1 md:flex">
-		<Sidebar.Header class="gap-3.5 border-b p-4">
-			<div class="flex w-full items-center justify-between">
-				<div class="text-foreground text-base font-medium">
-					{activeItem.title}
-				</div>
-				<Label class="flex items-center gap-2 text-sm">
-					<span>Unreads</span>
-					<Switch class="shadow-none" />
-				</Label>
-			</div>
-			<Sidebar.Input placeholder="Type to search..." />
-		</Sidebar.Header>
 		<Sidebar.Content>
-			<Sidebar.Group class="px-0">
-				<Sidebar.GroupContent>
-					{#each mails as mail (mail.email)}
-						<a
-							href="##"
-							class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 whitespace-nowrap border-b p-4 text-sm leading-tight last:border-b-0"
-						>
-							<div class="flex w-full items-center gap-2">
-								<span>{mail.name}</span>
-								<span class="ml-auto text-xs">{mail.date}</span>
-							</div>
-							<span class="font-medium">{mail.subject}</span>
-							<span class="line-clamp-2 w-[260px] whitespace-break-spaces text-xs">
-								{mail.teaser}
-							</span>
-						</a>
-					{/each}
-				</Sidebar.GroupContent>
-			</Sidebar.Group>
+			<NavProjects projects={data.projects} />
 		</Sidebar.Content>
+		<Sidebar.Footer>
+			<NavUser user={data.user} />
+		</Sidebar.Footer>
+		<Sidebar.Rail />
 	</Sidebar.Root>
+
 </Sidebar.Root>
