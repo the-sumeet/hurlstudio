@@ -49,10 +49,10 @@ func (a *App) ListFiles(path string) ([]FileEntry, error) {
 			continue
 		}
 
-		// Only include directories or .hurl files
+		// Only include directories, .hurl files, or markdown files
 		if !entry.IsDir() {
 			ext := strings.ToLower(filepath.Ext(entry.Name()))
-			if ext != ".hurl" {
+			if ext != ".hurl" && ext != ".md" && ext != ".markdown" {
 				continue
 			}
 		}
