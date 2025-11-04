@@ -8,8 +8,9 @@
 	import Trash2Icon from "@lucide/svelte/icons/trash-2";
 	import PencilIcon from "@lucide/svelte/icons/pencil";
 	import { onMount } from 'svelte';
-	import { ListFiles, OpenFile, GoUp, CreateFile, CreateDir, DeleteFile, RenameFile, GetCurrentFilesState } from "$lib/wailsjs/go/main/App";
+	import { ListFiles, OpenFile, GoUp, CreateFile, CreateDir, DeleteFile, RenameFile, GetCurrentFilesState, GetFileContent } from "$lib/wailsjs/go/main/App";
 	import FolderUp from "@lucide/svelte/icons/folder-up";
+	import { fileStore } from '$lib/stores/fileStore.svelte';
 
 	type FileEntry = {
 		name: string;
@@ -45,6 +46,13 @@
 		try {
 			await OpenFile(file.path);
 			await loadFiles();
+
+			// If it's a file (not a directory), load its content
+			if (!file.isDirectory) {
+				const content = await GetFileContent(file.path);
+				fileStore.setCurrentFile(file);
+				fileStore.setContent(content);
+			}
 		} catch (error) {
 			console.error('Failed to open file:', error);
 		}

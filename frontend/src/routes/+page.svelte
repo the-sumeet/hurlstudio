@@ -1,18 +1,53 @@
 <script lang="ts">
 	import * as Resizable from "$lib/components/ui/resizable/index.js";
 	import MonacoEditor from "$lib/components/MonacoEditor.svelte";
+	import { fileStore } from '$lib/stores/fileStore.svelte';
+	import { SaveFile } from "$lib/wailsjs/go/main/App";
 
-	let hurlContent = `# Example Hurl request
-GET https://api.github.com/users/github
+	let editorContent = $derived(fileStore.content);
 
-HTTP 200
-[Asserts]
-header "Content-Type" contains "application/json"`;
+	// Determine language based on file extension
+	let language = $derived.by(() => {
+		if (!fileStore.currentFile) return 'plaintext';
+		const ext = fileStore.currentFile.name.split('.').pop()?.toLowerCase();
+		if (ext === 'md' || ext === 'markdown') return 'markdown';
+		if (ext === 'hurl') return 'plaintext'; // We can add custom Hurl syntax later
+		return 'plaintext';
+	});
+
+	async function handleContentChange(newContent: string) {
+		if (fileStore.currentFile) {
+			try {
+				await SaveFile(fileStore.currentFile.path, newContent);
+				fileStore.setContent(newContent);
+			} catch (error) {
+				console.error('Failed to save file:', error);
+			}
+		}
+	}
 </script>
 
 <Resizable.PaneGroup direction="horizontal" class="h-screen">
 	<Resizable.Pane defaultSize={50}>
-		<MonacoEditor bind:value={hurlContent} language="plaintext" theme="vs-dark" />
+		{#if fileStore.currentFile}
+			<div class="h-full flex flex-col">
+				<div class="px-4 py-2 border-b">
+					<h2 class="text-sm font-medium">{fileStore.currentFile.name}</h2>
+				</div>
+				<div class="flex-1">
+					<MonacoEditor
+						value={editorContent}
+						{language}
+						theme="vs-dark"
+						onchange={handleContentChange}
+					/>
+				</div>
+			</div>
+		{:else}
+			<div class="h-full flex items-center justify-center text-muted-foreground">
+				<p>Select a file to edit</p>
+			</div>
+		{/if}
 	</Resizable.Pane>
 	<Resizable.Handle />
 	<Resizable.Pane defaultSize={50}>

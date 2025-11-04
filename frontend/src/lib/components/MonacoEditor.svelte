@@ -3,13 +3,22 @@
   import * as monaco from 'monaco-editor';
   import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 
+  let {
+    value = '',
+    language = 'plaintext',
+    theme = 'vs-dark',
+    readonly = false,
+    onchange = undefined
+  }: {
+    value?: string;
+    language?: string;
+    theme?: string;
+    readonly?: boolean;
+    onchange?: (newValue: string) => void;
+  } = $props();
+
   let editorContainer: HTMLDivElement;
   let editor: monaco.editor.IStandaloneCodeEditor;
-
-  export let value = '';
-  export let language = 'plaintext';
-  export let theme = 'vs-dark';
-  export let readonly = false;
 
   // Setup Monaco Editor workers
   self.MonacoEnvironment = {
@@ -34,7 +43,11 @@
 
     // Listen to content changes
     editor.onDidChangeModelContent(() => {
-      value = editor.getValue();
+      const newValue = editor.getValue();
+      value = newValue;
+      if (onchange) {
+        onchange(newValue);
+      }
     });
 
     return () => {
@@ -49,9 +62,21 @@
   });
 
   // Update editor when value changes externally
-  $: if (editor && value !== editor.getValue()) {
-    editor.setValue(value);
-  }
+  $effect(() => {
+    if (editor && value !== editor.getValue()) {
+      editor.setValue(value);
+    }
+  });
+
+  // Update language when it changes
+  $effect(() => {
+    if (editor) {
+      const model = editor.getModel();
+      if (model) {
+        monaco.editor.setModelLanguage(model, language);
+      }
+    }
+  });
 </script>
 
 <div bind:this={editorContainer} class="editor-container"></div>
