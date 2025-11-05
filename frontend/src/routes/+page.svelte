@@ -4,6 +4,9 @@
 	import { fileStore } from '$lib/stores/fileStore.svelte';
 	import { themeStore } from '$lib/stores/themeStore.svelte';
 	import { SaveFile } from '$lib/wailsjs/go/main/App';
+	import AppSidebar from '$lib/components/app-sidebar.svelte';
+	import { Separator } from '$lib/components/ui/separator/index.js';
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 
 	let editorContent = $derived(fileStore.content);
 
@@ -31,26 +34,46 @@
 	}
 </script>
 
-<Resizable.PaneGroup direction="horizontal" class="h-screen">
-	<Resizable.Pane defaultSize={50}>
-		{#if fileStore.currentFile}
-			<MonacoEditor
-				value={editorContent}
-				{language}
-				theme={editorTheme}
-				onchange={handleContentChange}
-			/>
-		{:else}
-			<div class="flex h-full items-center justify-center text-muted-foreground">
-				<p>Select a file to edit</p>
+<Sidebar.Provider style="--sidebar-width: 300px;">
+	<AppSidebar />
+	<Sidebar.Inset class="overflow-x-hidden">
+		<header
+			class="sticky top-0 flex w-full shrink-0 items-center gap-2 border-b bg-background p-4"
+		>
+			<Sidebar.Trigger class="-ml-1" />
+			<Separator orientation="vertical" class="mr-2 data-[orientation=vertical]:h-4" />
+			<div class="min-w-0 flex-1">
+				{#if fileStore.currentFile}
+					<h1 class="truncate text-sm font-medium" title={fileStore.currentFile.name}>
+						{fileStore.currentFile.name}
+					</h1>
+				{:else}
+					<h1 class="text-sm font-medium text-muted-foreground">No file selected</h1>
+				{/if}
 			</div>
-		{/if}
-	</Resizable.Pane>
-	<Resizable.Handle />
-	<Resizable.Pane defaultSize={50}>
-		<div class="p-4">
-			<h2 class="mb-2 text-lg font-bold">Response</h2>
-			<pre class="text-sm">Response will appear here...</pre>
-		</div>
-	</Resizable.Pane>
-</Resizable.PaneGroup>
+		</header>
+		<Resizable.PaneGroup direction="horizontal" class="h-screen">
+			<Resizable.Pane defaultSize={50}>
+				{#if fileStore.currentFile}
+					<MonacoEditor
+						value={editorContent}
+						{language}
+						theme={editorTheme}
+						onchange={handleContentChange}
+					/>
+				{:else}
+					<div class="flex h-full items-center justify-center text-muted-foreground">
+						<p>Select a file to edit</p>
+					</div>
+				{/if}
+			</Resizable.Pane>
+			<Resizable.Handle />
+			<Resizable.Pane defaultSize={50}>
+				<div class="p-4">
+					<h2 class="mb-2 text-lg font-bold">Response</h2>
+					<pre class="text-sm">Response will appear here...</pre>
+				</div>
+			</Resizable.Pane>
+		</Resizable.PaneGroup>
+	</Sidebar.Inset>
+</Sidebar.Provider>
