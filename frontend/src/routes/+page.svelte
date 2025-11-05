@@ -34,19 +34,12 @@
 <Resizable.PaneGroup direction="horizontal" class="h-screen">
 	<Resizable.Pane defaultSize={50}>
 		{#if fileStore.currentFile}
-			<div class="h-full flex flex-col">
-				<div class="px-4 py-2 border-b">
-					<h2 class="text-sm font-medium">{fileStore.currentFile.name}</h2>
-				</div>
-				<div class="flex-1">
-					<MonacoEditor
-						value={editorContent}
-						{language}
-						theme={editorTheme}
-						onchange={handleContentChange}
-					/>
-				</div>
-			</div>
+			<MonacoEditor
+				value={editorContent}
+				{language}
+				theme={editorTheme}
+				onchange={handleContentChange}
+			/>
 		{:else}
 			<div class="h-full flex items-center justify-center text-muted-foreground">
 				<p>Select a file to edit</p>
