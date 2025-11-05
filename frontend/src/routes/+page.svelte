@@ -1,9 +1,9 @@
 <script lang="ts">
-	import * as Resizable from "$lib/components/ui/resizable/index.js";
-	import MonacoEditor from "$lib/components/MonacoEditor.svelte";
+	import * as Resizable from '$lib/components/ui/resizable/index.js';
+	import MonacoEditor from '$lib/components/MonacoEditor.svelte';
 	import { fileStore } from '$lib/stores/fileStore.svelte';
 	import { themeStore } from '$lib/stores/themeStore.svelte';
-	import { SaveFile } from "$lib/wailsjs/go/main/App";
+	import { SaveFile } from '$lib/wailsjs/go/main/App';
 
 	let editorContent = $derived(fileStore.content);
 
@@ -41,7 +41,7 @@
 				onchange={handleContentChange}
 			/>
 		{:else}
-			<div class="h-full flex items-center justify-center text-muted-foreground">
+			<div class="flex h-full items-center justify-center text-muted-foreground">
 				<p>Select a file to edit</p>
 			</div>
 		{/if}
@@ -49,7 +49,7 @@
 	<Resizable.Handle />
 	<Resizable.Pane defaultSize={50}>
 		<div class="p-4">
-			<h2 class="text-lg font-bold mb-2">Response</h2>
+			<h2 class="mb-2 text-lg font-bold">Response</h2>
 			<pre class="text-sm">Response will appear here...</pre>
 		</div>
 	</Resizable.Pane>

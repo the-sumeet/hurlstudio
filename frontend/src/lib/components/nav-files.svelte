@@ -1,15 +1,25 @@
 <script lang="ts">
-	import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
-	import { useSidebar } from "$lib/components/ui/sidebar/context.svelte.js";
-	import * as Sidebar from "$lib/components/ui/sidebar/index.js";
-	import EllipsisIcon from "@lucide/svelte/icons/ellipsis";
-	import FolderIcon from "@lucide/svelte/icons/folder";
-	import FileIcon from "@lucide/svelte/icons/file";
-	import Trash2Icon from "@lucide/svelte/icons/trash-2";
-	import PencilIcon from "@lucide/svelte/icons/pencil";
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+	import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import EllipsisIcon from '@lucide/svelte/icons/ellipsis';
+	import FolderIcon from '@lucide/svelte/icons/folder';
+	import FileIcon from '@lucide/svelte/icons/file';
+	import Trash2Icon from '@lucide/svelte/icons/trash-2';
+	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import { onMount } from 'svelte';
-	import { ListFiles, OpenFile, GoUp, CreateFile, CreateDir, DeleteFile, RenameFile, GetCurrentFilesState, GetFileContent } from "$lib/wailsjs/go/main/App";
-	import FolderUp from "@lucide/svelte/icons/folder-up";
+	import {
+		ListFiles,
+		OpenFile,
+		GoUp,
+		CreateFile,
+		CreateDir,
+		DeleteFile,
+		RenameFile,
+		GetCurrentFilesState,
+		GetFileContent
+	} from '$lib/wailsjs/go/main/App';
+	import FolderUp from '@lucide/svelte/icons/folder-up';
 	import { fileStore } from '$lib/stores/fileStore.svelte';
 
 	type FileEntry = {
@@ -148,7 +158,7 @@
 			<Sidebar.MenuItem>
 				<Sidebar.MenuButton onclick={handleGoUp}>
 					<FolderUp />
-					<span >..</span>
+					<span>..</span>
 				</Sidebar.MenuButton>
 			</Sidebar.MenuItem>
 		</Sidebar.Menu>
@@ -179,8 +189,8 @@
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content
 						class="w-48 rounded-lg"
-						side={sidebar.isMobile ? "bottom" : "right"}
-						align={sidebar.isMobile ? "end" : "start"}
+						side={sidebar.isMobile ? 'bottom' : 'right'}
+						align={sidebar.isMobile ? 'end' : 'start'}
 					>
 						<DropdownMenu.Item onclick={() => handleRenameFile(file.path, file.name)}>
 							<PencilIcon class="text-muted-foreground" />

@@ -1,169 +1,180 @@
 <script lang="ts">
-	import ArchiveXIcon from "@lucide/svelte/icons/archive-x";
-	import FileIcon from "@lucide/svelte/icons/file";
-	import InboxIcon from "@lucide/svelte/icons/inbox";
-	import SendIcon from "@lucide/svelte/icons/send";
-	import SunIcon from "@lucide/svelte/icons/sun";
-	import MoonIcon from "@lucide/svelte/icons/moon";
-	import AudioWaveformIcon from "@lucide/svelte/icons/audio-waveform";
-	import BookOpenIcon from "@lucide/svelte/icons/book-open";
-	import BotIcon from "@lucide/svelte/icons/bot";
-	import ChartPieIcon from "@lucide/svelte/icons/chart-pie";
-	import CommandIcon from "@lucide/svelte/icons/command";
-	import FrameIcon from "@lucide/svelte/icons/frame";
-	import GalleryVerticalEndIcon from "@lucide/svelte/icons/gallery-vertical-end";
-	import MapIcon from "@lucide/svelte/icons/map";
-	import Settings2Icon from "@lucide/svelte/icons/settings-2";
-	import SquareTerminalIcon from "@lucide/svelte/icons/square-terminal";
-	import NavUser from "./nav-user.svelte";
-	import { Label } from "$lib/components/ui/label/index.js";
-	import { useSidebar } from "$lib/components/ui/sidebar/context.svelte.js";
-	import * as Sidebar from "$lib/components/ui/sidebar/index.js";
-	import { Switch } from "$lib/components/ui/switch/index.js";
-	import type { ComponentProps } from "svelte";
-	import NavMain from "./nav-main.svelte";
-	import NavFiles from "./nav-files.svelte";
+	import ArchiveXIcon from '@lucide/svelte/icons/archive-x';
+	import FileIcon from '@lucide/svelte/icons/file';
+	import InboxIcon from '@lucide/svelte/icons/inbox';
+	import SendIcon from '@lucide/svelte/icons/send';
+	import SunIcon from '@lucide/svelte/icons/sun';
+	import MoonIcon from '@lucide/svelte/icons/moon';
+	import AudioWaveformIcon from '@lucide/svelte/icons/audio-waveform';
+	import BookOpenIcon from '@lucide/svelte/icons/book-open';
+	import BotIcon from '@lucide/svelte/icons/bot';
+	import ChartPieIcon from '@lucide/svelte/icons/chart-pie';
+	import CommandIcon from '@lucide/svelte/icons/command';
+	import FrameIcon from '@lucide/svelte/icons/frame';
+	import GalleryVerticalEndIcon from '@lucide/svelte/icons/gallery-vertical-end';
+	import MapIcon from '@lucide/svelte/icons/map';
+	import Settings2Icon from '@lucide/svelte/icons/settings-2';
+	import SquareTerminalIcon from '@lucide/svelte/icons/square-terminal';
+	import NavUser from './nav-user.svelte';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import { Switch } from '$lib/components/ui/switch/index.js';
+	import type { ComponentProps } from 'svelte';
+	import NavMain from './nav-main.svelte';
+	import NavFiles from './nav-files.svelte';
 	import { themeStore } from '$lib/stores/themeStore.svelte';
-
+	import Settings from '@lucide/svelte/icons/settings';
+	import { page } from '$app/stores';
 	// This is sample data
 	const data = {
 		teams: [
-      {
-        name: "Acme Inc",
-        logo: GalleryVerticalEndIcon,
-        plan: "Enterprise",
-      },
-      {
-        name: "Acme Corp.",
-        logo: AudioWaveformIcon,
-        plan: "Startup",
-      },
-      {
-        name: "Evil Corp.",
-        logo: CommandIcon,
-        plan: "Free",
-      },
-    ],
+			{
+				name: 'Acme Inc',
+				logo: GalleryVerticalEndIcon,
+				plan: 'Enterprise'
+			},
+			{
+				name: 'Acme Corp.',
+				logo: AudioWaveformIcon,
+				plan: 'Startup'
+			},
+			{
+				name: 'Evil Corp.',
+				logo: CommandIcon,
+				plan: 'Free'
+			}
+		],
 		projects: [
-      {
-        name: "Design Engineering",
-        url: "#",
-        icon: FrameIcon,
-      },
-      {
-        name: "Sales & Marketing",
-        url: "#",
-        icon: ChartPieIcon,
-      },
-      {
-        name: "Travel",
-        url: "#",
-        icon: MapIcon,
-      },
-    ],
+			{
+				name: 'Design Engineering',
+				url: '#',
+				icon: FrameIcon
+			},
+			{
+				name: 'Sales & Marketing',
+				url: '#',
+				icon: ChartPieIcon
+			},
+			{
+				name: 'Travel',
+				url: '#',
+				icon: MapIcon
+			}
+		],
 		user: {
-			name: "shadcn",
-			email: "m@example.com",
-			avatar: "/avatars/shadcn.jpg",
+			name: 'shadcn',
+			email: 'm@example.com',
+			avatar: '/avatars/shadcn.jpg'
 		},
 		navMain: [
 			{
-				title: "Inbox",
-				url: "#",
+				title: 'Inbox',
+				url: '#',
 				icon: InboxIcon,
-				isActive: true,
+				isActive: true
 			},
 			{
-				title: "Drafts",
-				url: "#",
+				title: 'Drafts',
+				url: '#',
 				icon: FileIcon,
-				isActive: false,
+				isActive: false
 			},
 			{
-				title: "Sent",
-				url: "#",
+				title: 'Sent',
+				url: '#',
 				icon: SendIcon,
-				isActive: false,
+				isActive: false
 			},
 			{
-				title: "Junk",
-				url: "#",
+				title: 'Junk',
+				url: '#',
 				icon: ArchiveXIcon,
-				isActive: false,
-			},
+				isActive: false
+			}
 		],
 		mails: [
 			{
-				name: "William Smith",
-				email: "williamsmith@example.com",
-				subject: "Meeting Tomorrow",
-				date: "09:34 AM",
-				teaser: "Hi team, just a reminder about our meeting tomorrow at 10 AM.\nPlease come prepared with your project updates.",
+				name: 'William Smith',
+				email: 'williamsmith@example.com',
+				subject: 'Meeting Tomorrow',
+				date: '09:34 AM',
+				teaser:
+					'Hi team, just a reminder about our meeting tomorrow at 10 AM.\nPlease come prepared with your project updates.'
 			},
 			{
-				name: "Alice Smith",
-				email: "alicesmith@example.com",
-				subject: "Re: Project Update",
-				date: "Yesterday",
-				teaser: "Thanks for the update. The progress looks great so far.\nLet's schedule a call to discuss the next steps.",
+				name: 'Alice Smith',
+				email: 'alicesmith@example.com',
+				subject: 'Re: Project Update',
+				date: 'Yesterday',
+				teaser:
+					"Thanks for the update. The progress looks great so far.\nLet's schedule a call to discuss the next steps."
 			},
 			{
-				name: "Bob Johnson",
-				email: "bobjohnson@example.com",
-				subject: "Weekend Plans",
-				date: "2 days ago",
-				teaser: "Hey everyone! I'm thinking of organizing a team outing this weekend.\nWould you be interested in a hiking trip or a beach day?",
+				name: 'Bob Johnson',
+				email: 'bobjohnson@example.com',
+				subject: 'Weekend Plans',
+				date: '2 days ago',
+				teaser:
+					"Hey everyone! I'm thinking of organizing a team outing this weekend.\nWould you be interested in a hiking trip or a beach day?"
 			},
 			{
-				name: "Emily Davis",
-				email: "emilydavis@example.com",
-				subject: "Re: Question about Budget",
-				date: "2 days ago",
-				teaser: "I've reviewed the budget numbers you sent over.\nCan we set up a quick call to discuss some potential adjustments?",
+				name: 'Emily Davis',
+				email: 'emilydavis@example.com',
+				subject: 'Re: Question about Budget',
+				date: '2 days ago',
+				teaser:
+					"I've reviewed the budget numbers you sent over.\nCan we set up a quick call to discuss some potential adjustments?"
 			},
 			{
-				name: "Michael Wilson",
-				email: "michaelwilson@example.com",
-				subject: "Important Announcement",
-				date: "1 week ago",
-				teaser: "Please join us for an all-hands meeting this Friday at 3 PM.\nWe have some exciting news to share about the company's future.",
+				name: 'Michael Wilson',
+				email: 'michaelwilson@example.com',
+				subject: 'Important Announcement',
+				date: '1 week ago',
+				teaser:
+					"Please join us for an all-hands meeting this Friday at 3 PM.\nWe have some exciting news to share about the company's future."
 			},
 			{
-				name: "Sarah Brown",
-				email: "sarahbrown@example.com",
-				subject: "Re: Feedback on Proposal",
-				date: "1 week ago",
-				teaser: "Thank you for sending over the proposal. I've reviewed it and have some thoughts.\nCould we schedule a meeting to discuss my feedback in detail?",
+				name: 'Sarah Brown',
+				email: 'sarahbrown@example.com',
+				subject: 'Re: Feedback on Proposal',
+				date: '1 week ago',
+				teaser:
+					"Thank you for sending over the proposal. I've reviewed it and have some thoughts.\nCould we schedule a meeting to discuss my feedback in detail?"
 			},
 			{
-				name: "David Lee",
-				email: "davidlee@example.com",
-				subject: "New Project Idea",
-				date: "1 week ago",
-				teaser: "I've been brainstorming and came up with an interesting project concept.\nDo you have time this week to discuss its potential impact and feasibility?",
+				name: 'David Lee',
+				email: 'davidlee@example.com',
+				subject: 'New Project Idea',
+				date: '1 week ago',
+				teaser:
+					"I've been brainstorming and came up with an interesting project concept.\nDo you have time this week to discuss its potential impact and feasibility?"
 			},
 			{
-				name: "Olivia Wilson",
-				email: "oliviawilson@example.com",
-				subject: "Vacation Plans",
-				date: "1 week ago",
-				teaser: "Just a heads up that I'll be taking a two-week vacation next month.\nI'll make sure all my projects are up to date before I leave.",
+				name: 'Olivia Wilson',
+				email: 'oliviawilson@example.com',
+				subject: 'Vacation Plans',
+				date: '1 week ago',
+				teaser:
+					"Just a heads up that I'll be taking a two-week vacation next month.\nI'll make sure all my projects are up to date before I leave."
 			},
 			{
-				name: "James Martin",
-				email: "jamesmartin@example.com",
-				subject: "Re: Conference Registration",
-				date: "1 week ago",
-				teaser: "I've completed the registration for the upcoming tech conference.\nLet me know if you need any additional information from my end.",
+				name: 'James Martin',
+				email: 'jamesmartin@example.com',
+				subject: 'Re: Conference Registration',
+				date: '1 week ago',
+				teaser:
+					"I've completed the registration for the upcoming tech conference.\nLet me know if you need any additional information from my end."
 			},
 			{
-				name: "Sophia White",
-				email: "sophiawhite@example.com",
-				subject: "Team Dinner",
-				date: "1 week ago",
-				teaser: "To celebrate our recent project success, I'd like to organize a team dinner.\nAre you available next Friday evening? Please let me know your preferences.",
-			},
-		],
+				name: 'Sophia White',
+				email: 'sophiawhite@example.com',
+				subject: 'Team Dinner',
+				date: '1 week ago',
+				teaser:
+					"To celebrate our recent project success, I'd like to organize a team dinner.\nAre you available next Friday evening? Please let me know your preferences."
+			}
+		]
 	};
 
 	let { ref = $bindable(null), ...restProps }: ComponentProps<typeof Sidebar.Root> = $props();
@@ -172,7 +183,6 @@
 	let mails = $state(data.mails);
 	const sidebar = useSidebar();
 </script>
-
 
 <Sidebar.Root
 	bind:ref
@@ -191,7 +201,7 @@
 						{#snippet child({ props })}
 							<a href="##" {...props}>
 								<div
-									class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"
+									class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
 								>
 									<CommandIcon class="size-4" />
 								</div>
@@ -213,15 +223,12 @@
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton
 									tooltipContentProps={{
-										hidden: false,
+										hidden: false
 									}}
 									onclick={() => {
 										activeItem = item;
 										const mail = data.mails.sort(() => Math.random() - 0.5);
-										mails = mail.slice(
-											0,
-											Math.max(5, Math.floor(Math.random() * 10) + 1)
-										);
+										mails = mail.slice(0, Math.max(5, Math.floor(Math.random() * 10) + 1));
 										sidebar.setOpen(true);
 									}}
 									isActive={activeItem.title === item.title}
@@ -238,7 +245,25 @@
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton
 								tooltipContentProps={{
-									hidden: false,
+									hidden: false
+								}}
+								class="px-2.5 md:px-2"
+							>
+								{#snippet tooltipContent()}
+									Settings
+								{/snippet}
+								{#snippet child({ props })}
+									<a href="/settings" {...props}>
+										<Settings />
+										<span>Settings</span>
+									</a>
+								{/snippet}
+							</Sidebar.MenuButton>
+						</Sidebar.MenuItem>
+						<Sidebar.MenuItem>
+							<Sidebar.MenuButton
+								tooltipContentProps={{
+									hidden: false
 								}}
 								onclick={() => themeStore.toggle()}
 								class="px-2.5 md:px-2"
@@ -264,16 +289,15 @@
 		</Sidebar.Footer> -->
 	</Sidebar.Root>
 
-
-
-	<Sidebar.Root collapsible="none" class="hidden flex-1 md:flex">
-		<Sidebar.Content>
-			<NavFiles />
-		</Sidebar.Content>
-		<!-- <Sidebar.Footer>
-			<NavUser user={data.user} />
-		</Sidebar.Footer> -->
-		<Sidebar.Rail />
-	</Sidebar.Root>
-
+	{#if $page.url.pathname === '/'}
+		<Sidebar.Root collapsible="none" class="hidden flex-1 md:flex">
+			<Sidebar.Content>
+				<NavFiles />
+			</Sidebar.Content>
+			<!-- <Sidebar.Footer>
+				<NavUser user={data.user} />
+			</Sidebar.Footer> -->
+			<Sidebar.Rail />
+		</Sidebar.Root>
+	{/if}
 </Sidebar.Root>
