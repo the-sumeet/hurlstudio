@@ -7,10 +7,15 @@
 	import MoonIcon from '@lucide/svelte/icons/moon';
 	import AudioWaveformIcon from '@lucide/svelte/icons/audio-waveform';
 	import BookOpenIcon from '@lucide/svelte/icons/book-open';
-	import BotIcon from '@lucide/svelte/icons/bot';
+	import * as InputGroup from "$lib/components/ui/input-group/index.js";
+  import SearchIcon from "@lucide/svelte/icons/search";
+	  import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
+import FilePlus from '@lucide/svelte/icons/file-plus';
+import FolderPlus from '@lucide/svelte/icons/folder-plus';
 	import ChartPieIcon from '@lucide/svelte/icons/chart-pie';
 	import CommandIcon from '@lucide/svelte/icons/command';
 	import FrameIcon from '@lucide/svelte/icons/frame';
+	  import { Input } from "$lib/components/ui/input/index.js";
 	import GalleryVerticalEndIcon from '@lucide/svelte/icons/gallery-vertical-end';
 	import MapIcon from '@lucide/svelte/icons/map';
 	import Settings2Icon from '@lucide/svelte/icons/settings-2';
@@ -26,6 +31,9 @@
 	import { themeStore } from '$lib/stores/themeStore.svelte';
 	import Settings from '@lucide/svelte/icons/settings';
 	import { page } from '$app/stores';
+	import { Button } from './ui/button';
+	import { CreateFile, CreateDir, OpenFile, GetFileContent, GetCurrentFilesState } from '$lib/wailsjs/go/main/App';
+	import { fileStore } from '$lib/stores/fileStore.svelte';
 	// This is sample data
 	const data = {
 		teams: [
@@ -182,6 +190,82 @@
 	let activeItem = $state(data.navMain[0]);
 	let mails = $state(data.mails);
 	const sidebar = useSidebar();
+
+	// State for create new file/folder
+	let showCreateInput = $state(false);
+	let createInputValue = $state('');
+	let createType = $state<'file' | 'folder'>('file'); // Track if creating file or folder
+
+	function handleNewFileClick() {
+		createType = 'file';
+		showCreateInput = true;
+		createInputValue = '';
+	}
+
+	function handleNewFolderClick() {
+		createType = 'folder';
+		showCreateInput = true;
+		createInputValue = '';
+	}
+
+	async function handleCreateDone() {
+		if (!createInputValue.trim()) {
+			showCreateInput = false;
+			return;
+		}
+
+		try {
+			if (createType === 'file') {
+				// Validate file extension
+				const fileName = createInputValue.trim();
+				const validExtensions = ['.md', '.markdown', '.hurl'];
+				const hasValidExtension = validExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
+
+				if (!hasValidExtension) {
+					alert('Invalid file extension. File must end with .md, .markdown, or .hurl');
+					return;
+				}
+
+				await CreateFile(fileName);
+
+				// Get current directory and open the newly created file
+				const currentState = await GetCurrentFilesState();
+				if (currentState.currentDir) {
+					const filePath = `${currentState.currentDir.path}/${fileName}`;
+					const state = await OpenFile(filePath);
+
+					if (state.currentFile) {
+						const content = await GetFileContent(state.currentFile.path);
+						fileStore.setCurrentFile(state.currentFile);
+						fileStore.setContent(content);
+					}
+				}
+
+				// Trigger a refresh of the file list
+				window.dispatchEvent(new CustomEvent('refresh-files'));
+			} else {
+				// Create folder - no validation needed
+				await CreateDir(createInputValue.trim());
+
+				// Get current directory and open the newly created folder
+				const currentState = await GetCurrentFilesState();
+				if (currentState.currentDir) {
+					const folderPath = `${currentState.currentDir.path}/${createInputValue.trim()}`;
+					await OpenFile(folderPath);
+				}
+
+				// Trigger a refresh of the file list
+				window.dispatchEvent(new CustomEvent('refresh-files'));
+			}
+
+			// Reset state
+			showCreateInput = false;
+			createInputValue = '';
+		} catch (error) {
+			console.error(`Failed to create ${createType}:`, error);
+			alert(`Failed to create ${createType}: ${error}`);
+		}
+	}
 </script>
 
 <Sidebar.Root
@@ -298,6 +382,32 @@
 				<NavUser user={data.user} />
 			</Sidebar.Footer> -->
 			<Sidebar.Rail />
+			<Sidebar.Footer>
+				{#if showCreateInput}
+					<InputGroup.Root>
+						<InputGroup.Input
+							placeholder={createType === 'file' ? 'Enter file name...' : 'Enter folder name...'}
+							bind:value={createInputValue}
+							autocapitalize="off"
+							autocomplete="off"
+							autocorrect="off"
+							spellcheck="false"
+						/>
+						<InputGroup.Addon align="inline-end">
+							<InputGroup.Button onclick={handleCreateDone}>Done</InputGroup.Button>
+						</InputGroup.Addon>
+					</InputGroup.Root>
+				{/if}
+
+				<ButtonGroup.Root class="flex w-full">
+					<Button class="flex-1" size="icon" variant="outline" onclick={handleNewFileClick}>
+						<FilePlus />
+					</Button>
+					<Button class="flex-1" size="icon" variant="outline" onclick={handleNewFolderClick}>
+						<FolderPlus />
+					</Button>
+				</ButtonGroup.Root>
+			</Sidebar.Footer>
 		</Sidebar.Root>
 	{/if}
 </Sidebar.Root>

@@ -189,15 +189,10 @@ func (a *App) GetCurrentFilesState() CurrentFilesState {
 	return state
 }
 
-// CreateFile creates a new .hurl file with the given name in the current directory
+// CreateFile creates a new file with the given name in the current directory
 func (a *App) CreateFile(name string) error {
 	if name == "" {
 		return fmt.Errorf("file name cannot be empty")
-	}
-
-	// Add .hurl extension if not present
-	if !strings.HasSuffix(strings.ToLower(name), ".hurl") {
-		name = name + ".hurl"
 	}
 
 	filePath := filepath.Join(a.currentDir, name)
@@ -207,12 +202,26 @@ func (a *App) CreateFile(name string) error {
 		return fmt.Errorf("file %s already exists", name)
 	}
 
-	// Create the file with a basic template
-	initialContent := `# New Hurl Request
+	// Create the file with content based on extension
+	var initialContent string
+	ext := strings.ToLower(filepath.Ext(name))
+
+	switch ext {
+	case ".hurl":
+		initialContent = `# New Hurl Request
 GET https://example.com
 
 HTTP 200
 `
+	case ".md", ".markdown":
+		initialContent = `# New Markdown File
+
+Start writing your markdown here...
+`
+	default:
+		initialContent = ""
+	}
+
 	err := os.WriteFile(filePath, []byte(initialContent), 0644)
 	if err != nil {
 		return fmt.Errorf("failed to create file %s: %w", name, err)

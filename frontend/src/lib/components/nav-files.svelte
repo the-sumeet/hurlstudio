@@ -163,6 +163,17 @@
 			// Fall back to normal loading
 			await loadFiles();
 		}
+
+		// Listen for refresh events
+		const handleRefresh = () => {
+			loadFiles();
+		};
+		window.addEventListener('refresh-files', handleRefresh);
+
+		// Cleanup on unmount
+		return () => {
+			window.removeEventListener('refresh-files', handleRefresh);
+		};
 	});
 </script>
 
