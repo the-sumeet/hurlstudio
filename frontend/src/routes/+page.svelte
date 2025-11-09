@@ -11,6 +11,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as NativeSelect from '$lib/components/ui/native-select/index.js';
 	import Call from '$lib/components/Call.svelte';
+	import { marked } from 'marked';
 
 	let editorContent = $derived(fileStore.content);
 	let output = $state('');
@@ -74,8 +75,53 @@
 		return 'plaintext';
 	});
 
+	// Check if current file is markdown
+	let isMarkdownFile = $derived.by(() => {
+		if (!fileStore.currentFile) return false;
+		const ext = fileStore.currentFile.name.split('.').pop()?.toLowerCase();
+		return ext === 'md' || ext === 'markdown';
+	});
+
 	// Determine editor theme based on current theme
 	let editorTheme = $derived(themeStore.current === 'dark' ? 'vs-dark' : 'vs');
+
+	// Render markdown content with resolved paths
+	let renderedMarkdown = $derived.by(() => {
+		if (isMarkdownFile && editorContent && fileStore.currentFile) {
+			// Configure marked to use a custom renderer for images
+			const renderer = new marked.Renderer();
+			const baseDir = fileStore.currentFile.path.substring(0, fileStore.currentFile.path.lastIndexOf('/'));
+
+			renderer.image = ({ href, title, text }) => {
+				// Resolve relative paths to absolute paths
+				let resolvedHref = href || '';
+				if (typeof href === 'string' && href && !href.startsWith('http://') && !href.startsWith('https://') && !href.startsWith('data:')) {
+					// Handle relative paths
+					if (href.startsWith('./') || href.startsWith('../') || !href.startsWith('/')) {
+						// Resolve relative to the markdown file's directory
+						const parts = href.split('/');
+						const dirParts = baseDir.split('/');
+
+						for (const part of parts) {
+							if (part === '..') {
+								dirParts.pop();
+							} else if (part !== '.' && part !== '') {
+								dirParts.push(part);
+							}
+						}
+
+						resolvedHref = dirParts.join('/');
+					}
+				}
+
+				const titleAttr = title ? ` title="${title}"` : '';
+				return `<img src="${resolvedHref}" alt="${text || ''}"${titleAttr}>`;
+			};
+
+			return marked(editorContent, { renderer });
+		}
+		return '';
+	});
 
 	async function handleContentChange(newContent: string) {
 		if (fileStore.currentFile) {
@@ -135,7 +181,7 @@
 					<h1 class="text-sm font-medium text-muted-foreground">No file selected</h1>
 				{/if}
 			</div>
-			{#if fileStore.currentFile}
+			{#if fileStore.currentFile && !isMarkdownFile}
 				<div class="flex gap-2">
 					<Button onclick={handleRun} disabled={isRunning}>
 						<Play />
@@ -160,38 +206,50 @@
 					</div>
 				{/if}
 			</Resizable.Pane>
-			<Resizable.Handle />
-			<!-- Response -->
-			<Resizable.Pane defaultSize={50}>
-				<div class="flex h-full flex-col gap-4 p-2">
-					<!-- Entries -->
-					{#if report && report.entries.length > 1}
-						<div class="flex-shrink-0">
-							<NativeSelect.Root bind:value={selectedEntryIndex}>
-								{#each report.entries as entry, index}
-									<NativeSelect.Option value={index}>
-										{entry.calls[0]?.request.method}
-										{entry.calls[0]?.request.url}
-									</NativeSelect.Option>
-								{/each}
-							</NativeSelect.Root>
-						</div>
-					{/if}
 
-					<div class="flex min-h-0 flex-1 snap-y snap-mandatory flex-col gap-2 overflow-y-auto">
-						{#if selectedEntry && selectedEntry.calls.length > 0}
-							{#each selectedEntry.calls as call}
-								<div class="h-full snap-start">
-									<Call {call} />
-								</div>
-							{/each}
-						{:else if output}
-							<pre class="text-sm whitespace-pre-wrap">{output}</pre>
-						{:else}
-							<p class="text-sm text-muted-foreground">Response will appear here...</p>
-						{/if}
+			<Resizable.Handle withHandle />
+
+			<!-- Response / Preview -->
+			<Resizable.Pane defaultSize={50}>
+				{#if isMarkdownFile}
+					<!-- Markdown Preview -->
+					<div class="h-full overflow-auto p-4">
+						<div class="prose prose-sm dark:prose-invert max-w-none">
+							{@html renderedMarkdown}
+						</div>
 					</div>
-				</div>
+				{:else}
+					<!-- Hurl Response -->
+					<div class="flex h-full flex-col gap-4 p-2">
+						<!-- Entries -->
+						{#if report && report.entries.length > 1}
+							<div class="flex-shrink-0">
+								<NativeSelect.Root bind:value={selectedEntryIndex}>
+									{#each report.entries as entry, index}
+										<NativeSelect.Option value={index}>
+											{entry.calls[0]?.request.method}
+											{entry.calls[0]?.request.url}
+										</NativeSelect.Option>
+									{/each}
+								</NativeSelect.Root>
+							</div>
+						{/if}
+
+						<div class="flex min-h-0 flex-1 snap-y snap-mandatory flex-col gap-2 overflow-y-auto">
+							{#if selectedEntry && selectedEntry.calls.length > 0}
+								{#each selectedEntry.calls as call}
+									<div class="h-full snap-start">
+										<Call {call} />
+									</div>
+								{/each}
+							{:else if output}
+								<pre class="text-sm whitespace-pre-wrap">{output}</pre>
+							{:else}
+								<p class="text-sm text-muted-foreground">Response will appear here...</p>
+							{/if}
+						</div>
+					</div>
+				{/if}
 			</Resizable.Pane>
 		</Resizable.PaneGroup>
 	</Sidebar.Inset>

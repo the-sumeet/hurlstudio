@@ -17,7 +17,9 @@
 		DeleteFile,
 		RenameFile,
 		GetCurrentFilesState,
-		GetFileContent
+		GetFileContent,
+		SaveLastOpenedState,
+		LoadLastOpenedState
 	} from '$lib/wailsjs/go/main/App';
 	import FolderUp from '@lucide/svelte/icons/folder-up';
 	import { fileStore } from '$lib/stores/fileStore.svelte';
@@ -63,6 +65,9 @@
 				fileStore.setCurrentFile(file);
 				fileStore.setContent(content);
 			}
+
+			// Save the current state
+			await SaveLastOpenedState();
 		} catch (error) {
 			console.error('Failed to open file:', error);
 		}
@@ -72,6 +77,9 @@
 		try {
 			await GoUp();
 			await loadFiles();
+
+			// Save the current state
+			await SaveLastOpenedState();
 		} catch (error) {
 			console.error('Failed to go up:', error);
 		}
@@ -125,8 +133,36 @@
 		}
 	}
 
-	onMount(() => {
-		loadFiles();
+	onMount(async () => {
+		try {
+			// Try to load last opened state
+			const lastState = await LoadLastOpenedState();
+
+			if (lastState.currentDir || lastState.currentFile) {
+				// State was loaded successfully
+				currentState = lastState;
+
+				// Load files from the last directory
+				if (lastState.currentDir) {
+					const fileList = await ListFiles(lastState.currentDir.path);
+					files = fileList || [];
+				}
+
+				// Restore the last opened file
+				if (lastState.currentFile) {
+					const content = await GetFileContent(lastState.currentFile.path);
+					fileStore.setCurrentFile(lastState.currentFile);
+					fileStore.setContent(content);
+				}
+			} else {
+				// No saved state, load default
+				await loadFiles();
+			}
+		} catch (error) {
+			console.error('Failed to load last state:', error);
+			// Fall back to normal loading
+			await loadFiles();
+		}
 	});
 </script>
 

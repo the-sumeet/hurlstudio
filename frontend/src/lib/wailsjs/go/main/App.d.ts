@@ -24,6 +24,8 @@ export function Greet(arg1:string):Promise<string>;
 
 export function ListFiles(arg1:string):Promise<Array<main.FileEntry>>;
 
+export function LoadLastOpenedState():Promise<main.CurrentFilesState>;
+
 export function OpenFile(arg1:string):Promise<main.CurrentFilesState>;
 
 export function RenameFile(arg1:string,arg2:string):Promise<void>;
@@ -33,3 +35,5 @@ export function RunHurl(arg1:string):Promise<string>;
 export function RunHurlWithOptions(arg1:string,arg2:Array<string>):Promise<string>;
 
 export function SaveFile(arg1:string,arg2:string):Promise<void>;
+
+export function SaveLastOpenedState():Promise<void>;

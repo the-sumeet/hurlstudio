@@ -46,6 +46,10 @@ export function ListFiles(arg1) {
   return window['go']['main']['App']['ListFiles'](arg1);
 }
 
+export function LoadLastOpenedState() {
+  return window['go']['main']['App']['LoadLastOpenedState']();
+}
+
 export function OpenFile(arg1) {
   return window['go']['main']['App']['OpenFile'](arg1);
 }
@@ -64,4 +68,8 @@ export function RunHurlWithOptions(arg1, arg2) {
 
 export function SaveFile(arg1, arg2) {
   return window['go']['main']['App']['SaveFile'](arg1, arg2);
+}
+
+export function SaveLastOpenedState() {
+  return window['go']['main']['App']['SaveLastOpenedState']();
 }

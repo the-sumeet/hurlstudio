@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -335,4 +336,93 @@ func (a *App) SaveFile(path string, content string) error {
 func (a *App) ClearCurrentFile() CurrentFilesState {
 	a.currentFile = ""
 	return a.GetCurrentFilesState()
+}
+
+// SaveLastOpenedState saves the current directory and file to a state file
+func (a *App) SaveLastOpenedState() error {
+	stateFile := filepath.Join(os.TempDir(), "hurlstudio", "last_state.json")
+
+	// Create directory if it doesn't exist
+	stateDir := filepath.Dir(stateFile)
+	if err := os.MkdirAll(stateDir, 0755); err != nil {
+		return fmt.Errorf("failed to create state directory: %w", err)
+	}
+
+	state := CurrentFilesState{}
+	if a.currentDir != "" {
+		dirInfo, err := os.Stat(a.currentDir)
+		if err == nil {
+			state.CurrentDir = &FileEntry{
+				Name:        filepath.Base(a.currentDir),
+				Path:        a.currentDir,
+				IsDirectory: true,
+				Size:        dirInfo.Size(),
+				ModTime:     dirInfo.ModTime(),
+			}
+		}
+	}
+
+	if a.currentFile != "" {
+		fileInfo, err := os.Stat(a.currentFile)
+		if err == nil {
+			state.CurrentFile = &FileEntry{
+				Name:        filepath.Base(a.currentFile),
+				Path:        a.currentFile,
+				IsDirectory: false,
+				Size:        fileInfo.Size(),
+				ModTime:     fileInfo.ModTime(),
+			}
+		}
+	}
+
+	data, err := json.Marshal(state)
+	if err != nil {
+		return fmt.Errorf("failed to marshal state: %w", err)
+	}
+
+	if err := os.WriteFile(stateFile, data, 0644); err != nil {
+		return fmt.Errorf("failed to write state file: %w", err)
+	}
+
+	return nil
+}
+
+// LoadLastOpenedState loads the last opened directory and file from the state file
+func (a *App) LoadLastOpenedState() (CurrentFilesState, error) {
+	stateFile := filepath.Join(os.TempDir(), "hurlstudio", "last_state.json")
+
+	// Check if state file exists
+	if _, err := os.Stat(stateFile); os.IsNotExist(err) {
+		// No state file exists, return empty state
+		return CurrentFilesState{}, nil
+	}
+
+	data, err := os.ReadFile(stateFile)
+	if err != nil {
+		return CurrentFilesState{}, fmt.Errorf("failed to read state file: %w", err)
+	}
+
+	var state CurrentFilesState
+	if err := json.Unmarshal(data, &state); err != nil {
+		return CurrentFilesState{}, fmt.Errorf("failed to unmarshal state: %w", err)
+	}
+
+	// Verify that the paths still exist
+	if state.CurrentDir != nil {
+		if _, err := os.Stat(state.CurrentDir.Path); err == nil {
+			a.currentDir = state.CurrentDir.Path
+		} else {
+			state.CurrentDir = nil
+		}
+	}
+
+	if state.CurrentFile != nil {
+		if _, err := os.Stat(state.CurrentFile.Path); err == nil {
+			a.currentFile = state.CurrentFile.Path
+		} else {
+			state.CurrentFile = nil
+		}
+	}
+
+	return state, nil
 }
