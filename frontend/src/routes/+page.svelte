@@ -1,14 +1,69 @@
 <script lang="ts">
 	import * as Resizable from '$lib/components/ui/resizable/index.js';
 	import MonacoEditor from '$lib/components/MonacoEditor.svelte';
+	import Play from '@lucide/svelte/icons/play';
 	import { fileStore } from '$lib/stores/fileStore.svelte';
 	import { themeStore } from '$lib/stores/themeStore.svelte';
-	import { SaveFile } from '$lib/wailsjs/go/main/App';
+	import { SaveFile, RunHurl, GetExistingReport } from '$lib/wailsjs/go/main/App';
 	import AppSidebar from '$lib/components/app-sidebar.svelte';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as NativeSelect from '$lib/components/ui/native-select/index.js';
+	import Call from '$lib/components/Call.svelte';
 
 	let editorContent = $derived(fileStore.content);
+	let output = $state('');
+	let isRunning = $state(false);
+	let report = $state<App.HurlReport | null>(null);
+	let selectedEntryIndex = $state(0);
+
+	// Load existing report when file changes
+	$effect(() => {
+		if (fileStore.currentFile && fileStore.currentFile.name.endsWith('.hurl')) {
+			loadExistingReport();
+		} else {
+			// Clear report if not a hurl file
+			report = null;
+			output = '';
+		}
+	});
+
+	async function loadExistingReport() {
+		if (!fileStore.currentFile) return;
+
+		try {
+			const existingReport = await GetExistingReport(fileStore.currentFile.path);
+			if (existingReport) {
+				// Try to parse as JSON report
+				try {
+					const parsed = JSON.parse(existingReport);
+					// Hurl returns an array with a single report
+					if (Array.isArray(parsed) && parsed.length > 0) {
+						report = parsed[0];
+						output = existingReport;
+					}
+				} catch (e) {
+					// Not a valid JSON, ignore
+					console.log('Existing report is not valid JSON');
+				}
+			} else {
+				// No existing report found
+				report = null;
+				output = '';
+			}
+		} catch (error) {
+			console.error('Failed to load existing report:', error);
+		}
+	}
+
+	// Get selected entry
+	let selectedEntry = $derived.by(() => {
+		if (report && report.entries.length > 0) {
+			return report.entries[selectedEntryIndex];
+		}
+		return null;
+	});
 
 	// Determine language based on file extension
 	let language = $derived.by(() => {
@@ -32,14 +87,43 @@
 			}
 		}
 	}
+
+	async function handleRun() {
+		if (!fileStore.currentFile) return;
+
+		isRunning = true;
+		output = 'Running...';
+		report = null;
+		selectedEntryIndex = 0;
+
+		try {
+			const result = await RunHurl(fileStore.currentFile.path);
+			output = result || 'Success! (No output)';
+
+			// Try to parse as JSON report
+			try {
+				const parsed = JSON.parse(result);
+				// Hurl returns an array with a single report
+				if (Array.isArray(parsed) && parsed.length > 0) {
+					report = parsed[0];
+				}
+			} catch (e) {
+				// Not a JSON response, keep as plain text
+				console.log('Response is not JSON, displaying as plain text');
+			}
+		} catch (error) {
+			output = `Error: ${error}`;
+			console.error('Failed to run hurl:', error);
+		} finally {
+			isRunning = false;
+		}
+	}
 </script>
 
 <Sidebar.Provider style="--sidebar-width: 300px;">
 	<AppSidebar />
 	<Sidebar.Inset class="overflow-x-hidden">
-		<header
-			class="sticky top-0 flex w-full shrink-0 items-center gap-2 border-b bg-background p-4"
-		>
+		<header class="sticky top-0 flex w-full shrink-0 items-center gap-2 border-b bg-background p-4">
 			<Sidebar.Trigger class="-ml-1" />
 			<Separator orientation="vertical" class="mr-2 data-[orientation=vertical]:h-4" />
 			<div class="min-w-0 flex-1">
@@ -51,8 +135,17 @@
 					<h1 class="text-sm font-medium text-muted-foreground">No file selected</h1>
 				{/if}
 			</div>
+			{#if fileStore.currentFile}
+				<div class="flex gap-2">
+					<Button onclick={handleRun} disabled={isRunning}>
+						<Play />
+						{isRunning ? 'Running...' : 'Run'}
+					</Button>
+				</div>
+			{/if}
 		</header>
 		<Resizable.PaneGroup direction="horizontal" class="h-screen">
+			<!-- Request -->
 			<Resizable.Pane defaultSize={50}>
 				{#if fileStore.currentFile}
 					<MonacoEditor
@@ -68,10 +161,36 @@
 				{/if}
 			</Resizable.Pane>
 			<Resizable.Handle />
+			<!-- Response -->
 			<Resizable.Pane defaultSize={50}>
-				<div class="p-4">
-					<h2 class="mb-2 text-lg font-bold">Response</h2>
-					<pre class="text-sm">Response will appear here...</pre>
+				<div class="flex h-full flex-col gap-4 p-2">
+					<!-- Entries -->
+					{#if report && report.entries.length > 1}
+						<div class="flex-shrink-0">
+							<NativeSelect.Root bind:value={selectedEntryIndex}>
+								{#each report.entries as entry, index}
+									<NativeSelect.Option value={index}>
+										{entry.calls[0]?.request.method}
+										{entry.calls[0]?.request.url}
+									</NativeSelect.Option>
+								{/each}
+							</NativeSelect.Root>
+						</div>
+					{/if}
+
+					<div class="flex min-h-0 flex-1 snap-y snap-mandatory flex-col gap-2 overflow-y-auto">
+						{#if selectedEntry && selectedEntry.calls.length > 0}
+							{#each selectedEntry.calls as call}
+								<div class="h-full snap-start">
+									<Call {call} />
+								</div>
+							{/each}
+						{:else if output}
+							<pre class="text-sm whitespace-pre-wrap">{output}</pre>
+						{:else}
+							<p class="text-sm text-muted-foreground">Response will appear here...</p>
+						{/if}
+					</div>
 				</div>
 			</Resizable.Pane>
 		</Resizable.PaneGroup>

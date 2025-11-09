@@ -3,7 +3,6 @@ package main
 import (
 	"embed"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -55,17 +54,46 @@ func GetHurlPath() (string, error) {
 	return binaryPath, nil
 }
 
-// RunHurl executes a hurl file and returns the output
+// RunHurl executes a hurl file and returns the JSON report
+// Generates a JSON report in /tmp/hurlstudio/<full-file-path>/
 func (a *App) RunHurl(filePath string) (string, error) {
 	hurlPath, err := GetHurlPath()
 	if err != nil {
 		return "", err
 	}
 
-	cmd := exec.Command(hurlPath, filePath)
-	output, err := cmd.CombinedOutput()
+	// Create report directory preserving the full file path
+	// e.g., /tmp/hurlstudio/Users/sumeet/Projects/myproject/api.hurl/
+	reportDir := filepath.Join(os.TempDir(), "hurlstudio", filePath)
+	fmt.Println("Report directory:", reportDir)
 
-	return string(output), err
+	// Remove and recreate this specific file's report directory to ensure clean state
+	os.RemoveAll(reportDir)
+	if err := os.MkdirAll(reportDir, 0755); err != nil {
+		return "", fmt.Errorf("failed to create report directory: %w", err)
+	}
+
+	// Run hurl with JSON report generation
+	cmd := exec.Command(hurlPath, "--report-json", reportDir, filePath)
+	output, _ := cmd.CombinedOutput()
+
+	// Read the generated JSON report
+	// Hurl generates report with the filename: report-<timestamp>.json
+	// We'll read the most recent file
+	reportFiles, err := filepath.Glob(filepath.Join(reportDir, "*.json"))
+	if err != nil || len(reportFiles) == 0 {
+		// If no JSON report found, return the stdout output
+		return string(output), nil
+	}
+
+	// Read the most recent report file (last one in sorted list)
+	reportFile := reportFiles[len(reportFiles)-1]
+	jsonContent, err := os.ReadFile(reportFile)
+	if err != nil {
+		return string(output), nil
+	}
+
+	return string(jsonContent), nil
 }
 
 // RunHurlWithOptions executes a hurl file with custom options
@@ -80,4 +108,45 @@ func (a *App) RunHurlWithOptions(filePath string, options []string) (string, err
 	output, err := cmd.CombinedOutput()
 
 	return string(output), err
+}
+
+// GetExistingReport checks if a report already exists for the given file path
+// Returns the report JSON content if found, empty string if not found
+func (a *App) GetExistingReport(filePath string) (string, error) {
+	reportDir := filepath.Join(os.TempDir(), "hurlstudio", filePath)
+
+	// Check if report directory exists
+	if _, err := os.Stat(reportDir); os.IsNotExist(err) {
+		return "", nil // No report exists yet
+	}
+
+	// Look for JSON report files
+	reportFiles, err := filepath.Glob(filepath.Join(reportDir, "*.json"))
+	if err != nil || len(reportFiles) == 0 {
+		return "", nil // No report found
+	}
+
+	// Read the most recent report file
+	reportFile := reportFiles[len(reportFiles)-1]
+	jsonContent, err := os.ReadFile(reportFile)
+	if err != nil {
+		return "", nil // Could not read report
+	}
+
+	return string(jsonContent), nil
+}
+
+// GetResponseBody reads the response body from the report directory
+// bodyPath is the relative path from the report (e.g., "store/response_1.txt")
+func (a *App) GetResponseBody(hurlFilePath string, bodyPath string) (string, error) {
+	reportDir := filepath.Join(os.TempDir(), "hurlstudio", hurlFilePath)
+	bodyFilePath := filepath.Join(reportDir, bodyPath)
+
+	// Read the body file
+	content, err := os.ReadFile(bodyFilePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read body file: %w", err)
+	}
+
+	return string(content), nil
 }

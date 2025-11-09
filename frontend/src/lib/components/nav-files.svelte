@@ -165,7 +165,7 @@
 	{/if}
 
 	<Sidebar.Menu>
-		{#each files as file (file.path)}
+		{#each files || [] as file (file.path)}
 			<Sidebar.MenuItem>
 				<Sidebar.MenuButton
 					onclick={() => handleOpenFile(file)}
