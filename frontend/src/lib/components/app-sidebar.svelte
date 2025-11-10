@@ -195,17 +195,26 @@ import FolderPlus from '@lucide/svelte/icons/folder-plus';
 	let showCreateInput = $state(false);
 	let createInputValue = $state('');
 	let createType = $state<'file' | 'folder'>('file'); // Track if creating file or folder
+	let createError = $state('');
 
 	function handleNewFileClick() {
 		createType = 'file';
 		showCreateInput = true;
 		createInputValue = '';
+		createError = '';
 	}
 
 	function handleNewFolderClick() {
 		createType = 'folder';
 		showCreateInput = true;
 		createInputValue = '';
+		createError = '';
+	}
+
+	function handleCancel() {
+		showCreateInput = false;
+		createInputValue = '';
+		createError = '';
 	}
 
 	async function handleCreateDone() {
@@ -222,7 +231,7 @@ import FolderPlus from '@lucide/svelte/icons/folder-plus';
 				const hasValidExtension = validExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
 
 				if (!hasValidExtension) {
-					alert('Invalid file extension. File must end with .md, .markdown, or .hurl');
+					createError = 'Invalid file extension. File must end with .md, .markdown, or .hurl';
 					return;
 				}
 
@@ -261,9 +270,10 @@ import FolderPlus from '@lucide/svelte/icons/folder-plus';
 			// Reset state
 			showCreateInput = false;
 			createInputValue = '';
+			createError = '';
 		} catch (error) {
 			console.error(`Failed to create ${createType}:`, error);
-			alert(`Failed to create ${createType}: ${error}`);
+			createError = `Failed to create ${createType}: ${error}`;
 		}
 	}
 </script>
@@ -273,6 +283,7 @@ import FolderPlus from '@lucide/svelte/icons/folder-plus';
 	collapsible="icon"
 	class="overflow-hidden [&>[data-sidebar=sidebar]]:flex-row"
 	{...restProps}
+	id="main-sidebar-root"
 >
 	<!-- This is the first sidebar -->
 	<!-- We disable collapsible and adjust width to icon. -->
@@ -374,7 +385,7 @@ import FolderPlus from '@lucide/svelte/icons/folder-plus';
 	</Sidebar.Root>
 
 	{#if $page.url.pathname === '/'}
-		<Sidebar.Root collapsible="none" class="hidden flex-1 md:flex">
+		<Sidebar.Root collapsible="none" class="hidden flex-1 md:flex overflow-x-hidden">
 			<Sidebar.Content>
 				<NavFiles />
 			</Sidebar.Content>
@@ -382,31 +393,41 @@ import FolderPlus from '@lucide/svelte/icons/folder-plus';
 				<NavUser user={data.user} />
 			</Sidebar.Footer> -->
 			<Sidebar.Rail />
-			<Sidebar.Footer>
+			<Sidebar.Footer class="p-2">
 				{#if showCreateInput}
-					<InputGroup.Root>
-						<InputGroup.Input
-							placeholder={createType === 'file' ? 'Enter file name...' : 'Enter folder name...'}
-							bind:value={createInputValue}
-							autocapitalize="off"
-							autocomplete="off"
-							autocorrect="off"
-							spellcheck="false"
-						/>
-						<InputGroup.Addon align="inline-end">
-							<InputGroup.Button onclick={handleCreateDone}>Done</InputGroup.Button>
-						</InputGroup.Addon>
-					</InputGroup.Root>
+					<div class="flex flex-col gap-2">
+						<InputGroup.Root>
+							<InputGroup.Input
+								placeholder={createType === 'file' ? 'Enter file name...' : 'Enter folder name...'}
+								bind:value={createInputValue}
+								autocapitalize="off"
+								autocomplete="off"
+								autocorrect="off"
+								spellcheck="false"
+							/>
+							<InputGroup.Addon align="inline-end">
+								<InputGroup.Button onclick={handleCreateDone}>Done</InputGroup.Button>
+							</InputGroup.Addon>
+						</InputGroup.Root>
+						{#if createError}
+							<div class="text-xs text-destructive px-2">
+								{createError}
+							</div>
+						{/if}
+						<Button class="w-full" variant="outline" onclick={handleCancel}>
+							Cancel
+						</Button>
+					</div>
+				{:else}
+					<ButtonGroup.Root class="flex w-full">
+						<Button class="flex-1" size="icon" variant="outline" onclick={handleNewFileClick}>
+							<FilePlus />
+						</Button>
+						<Button class="flex-1" size="icon" variant="outline" onclick={handleNewFolderClick}>
+							<FolderPlus />
+						</Button>
+					</ButtonGroup.Root>
 				{/if}
-
-				<ButtonGroup.Root class="flex w-full">
-					<Button class="flex-1" size="icon" variant="outline" onclick={handleNewFileClick}>
-						<FilePlus />
-					</Button>
-					<Button class="flex-1" size="icon" variant="outline" onclick={handleNewFolderClick}>
-						<FolderPlus />
-					</Button>
-				</ButtonGroup.Root>
 			</Sidebar.Footer>
 		</Sidebar.Root>
 	{/if}
