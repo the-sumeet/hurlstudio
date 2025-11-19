@@ -97,12 +97,21 @@
 		if (isMarkdownFile && editorContent && fileStore.currentFile) {
 			// Configure marked to use a custom renderer for images
 			const renderer = new marked.Renderer();
-			const baseDir = fileStore.currentFile.path.substring(0, fileStore.currentFile.path.lastIndexOf('/'));
+			const baseDir = fileStore.currentFile.path.substring(
+				0,
+				fileStore.currentFile.path.lastIndexOf('/')
+			);
 
 			renderer.image = ({ href, title, text }) => {
 				// Resolve relative paths to absolute paths
 				let resolvedHref = href || '';
-				if (typeof href === 'string' && href && !href.startsWith('http://') && !href.startsWith('https://') && !href.startsWith('data:')) {
+				if (
+					typeof href === 'string' &&
+					href &&
+					!href.startsWith('http://') &&
+					!href.startsWith('https://') &&
+					!href.startsWith('data:')
+				) {
 					// Handle relative paths
 					if (href.startsWith('./') || href.startsWith('../') || !href.startsWith('/')) {
 						// Resolve relative to the markdown file's directory
@@ -255,7 +264,7 @@
 				{#if isMarkdownFile}
 					<!-- Markdown Preview -->
 					<div class="h-full overflow-auto p-4">
-						<div class="prose prose-sm dark:prose-invert max-w-none">
+						<div class="prose prose-sm max-w-none dark:prose-invert">
 							{@html renderedMarkdown}
 						</div>
 					</div>

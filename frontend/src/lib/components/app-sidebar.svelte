@@ -16,9 +16,14 @@
 	import NavFiles from './nav-files.svelte';
 	import { themeStore } from '$lib/stores/themeStore.svelte';
 	import { page } from '$app/stores';
-	import { CreateFile, CreateDir, OpenFile, GetFileContent, GetCurrentFilesState } from '$lib/wailsjs/go/main/App';
+	import {
+		CreateFile,
+		CreateDir,
+		OpenFile,
+		GetFileContent,
+		GetCurrentFilesState
+	} from '$lib/wailsjs/go/main/App';
 	import { fileStore } from '$lib/stores/fileStore.svelte';
-
 
 	let { ref = $bindable(null), ...restProps }: ComponentProps<typeof Sidebar.Root> = $props();
 
@@ -59,7 +64,9 @@
 				// Validate file extension
 				const fileName = createInputValue.trim();
 				const validExtensions = ['.md', '.markdown', '.hurl'];
-				const hasValidExtension = validExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
+				const hasValidExtension = validExtensions.some((ext) =>
+					fileName.toLowerCase().endsWith(ext)
+				);
 
 				if (!hasValidExtension) {
 					createError = 'Invalid file extension. File must end with .md, .markdown, or .hurl';
@@ -210,7 +217,7 @@
 	</Sidebar.Root>
 
 	{#if $page.url.pathname === '/'}
-		<Sidebar.Root collapsible="none" class="hidden flex-1 md:flex overflow-x-hidden">
+		<Sidebar.Root collapsible="none" class="hidden flex-1 overflow-x-hidden md:flex">
 			<Sidebar.Content>
 				<NavFiles />
 			</Sidebar.Content>
@@ -235,13 +242,11 @@
 							</InputGroup.Addon>
 						</InputGroup.Root>
 						{#if createError}
-							<div class="text-xs text-destructive px-2">
+							<div class="px-2 text-xs text-destructive">
 								{createError}
 							</div>
 						{/if}
-						<Button class="w-full" variant="outline" onclick={handleCancel}>
-							Cancel
-						</Button>
+						<Button class="w-full" variant="outline" onclick={handleCancel}>Cancel</Button>
 					</div>
 				{:else}
 					<ButtonGroup.Root class="flex w-full">

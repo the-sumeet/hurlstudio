@@ -56,10 +56,10 @@
 					<!-- Response -->
 					<Tabs.Content value="response" class="flex min-h-0 flex-1 flex-col overflow-hidden">
 						<Card.Root class="flex flex-1 flex-col overflow-hidden">
-								<Card.Content class="flex-1">
-									<ResponseDetails response={call.response} />
-								</Card.Content>
-							</Card.Root>
+							<Card.Content class="flex-1">
+								<ResponseDetails response={call.response} />
+							</Card.Content>
+						</Card.Root>
 					</Tabs.Content>
 					<!-- Request -->
 					<Tabs.Content value="request" class="flex min-h-0 flex-1 flex-col overflow-hidden">

@@ -168,11 +168,11 @@
 		<Tabs.Trigger value="body">Body</Tabs.Trigger>
 		<Tabs.Trigger value="details">Details</Tabs.Trigger>
 	</Tabs.List>
-	<Tabs.Content value="body" class="min-h-0 flex-1 overflow-hidden flex flex-col">
+	<Tabs.Content value="body" class="flex min-h-0 flex-1 flex-col overflow-hidden">
 		{#if isLoadingBody}
 			<p class="p-2 text-sm text-muted-foreground">Loading body...</p>
 		{:else if actualBody}
-			<div class="flex w-full justify-end mb-2 shrink-0">
+			<div class="mb-2 flex w-full shrink-0 justify-end">
 				<ButtonGroup.Root>
 					<Button size="icon" variant="outline" onclick={handleFormat} title="Format content">
 						<Wand />
@@ -197,7 +197,7 @@
 	<Tabs.Content value="details" class="flex min-h-0 flex-1 flex-col overflow-hidden">
 		<textarea
 			readonly
-			class="w-full flex-1 resize-none rounded border bg-muted p-2 font-mono text-xs overflow-auto"
+			class="w-full flex-1 resize-none overflow-auto rounded border bg-muted p-2 font-mono text-xs"
 			style="white-space: pre;"
 			value={detailsText}
 		></textarea>

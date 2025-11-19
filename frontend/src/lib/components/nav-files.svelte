@@ -173,7 +173,9 @@
 		if (!fileToRename.isDirectory) {
 			const trimmedName = newFileName.trim();
 			const validExtensions = ['.md', '.markdown', '.hurl'];
-			const hasValidExtension = validExtensions.some(ext => trimmedName.toLowerCase().endsWith(ext));
+			const hasValidExtension = validExtensions.some((ext) =>
+				trimmedName.toLowerCase().endsWith(ext)
+			);
 
 			if (!hasValidExtension) {
 				renameError = 'Invalid file extension. File must end with .md, .markdown, or .hurl';
@@ -326,12 +328,16 @@
 						side={sidebar.isMobile ? 'bottom' : 'right'}
 						align={sidebar.isMobile ? 'end' : 'start'}
 					>
-						<DropdownMenu.Item onclick={() => handleRenameClick(file.path, file.name, file.isDirectory)}>
+						<DropdownMenu.Item
+							onclick={() => handleRenameClick(file.path, file.name, file.isDirectory)}
+						>
 							<PencilIcon class="text-muted-foreground" />
 							<span>Rename</span>
 						</DropdownMenu.Item>
 						<DropdownMenu.Separator />
-						<DropdownMenu.Item onclick={() => handleDeleteClick(file.path, file.name, file.isDirectory)}>
+						<DropdownMenu.Item
+							onclick={() => handleDeleteClick(file.path, file.name, file.isDirectory)}
+						>
 							<Trash2Icon class="text-muted-foreground" />
 							<span>Delete</span>
 						</DropdownMenu.Item>
@@ -349,7 +355,11 @@
 			<AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
 			<AlertDialog.Description>
 				{#if fileToDelete}
-					This action cannot be undone. This will permanently delete the {fileToDelete.isDirectory ? 'folder' : 'file'} "<strong>{fileToDelete.name}</strong>"{fileToDelete.isDirectory ? ' and all its contents' : ''}.
+					This action cannot be undone. This will permanently delete the {fileToDelete.isDirectory
+						? 'folder'
+						: 'file'} "<strong>{fileToDelete.name}</strong>"{fileToDelete.isDirectory
+						? ' and all its contents'
+						: ''}.
 				{/if}
 			</AlertDialog.Description>
 		</AlertDialog.Header>

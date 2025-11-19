@@ -37,7 +37,17 @@
 	function findHurlEntries(text: string): number[] {
 		const lines = text.split('\n');
 		const entryLines: number[] = [];
-		const httpMethods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'CONNECT', 'TRACE'];
+		const httpMethods = [
+			'GET',
+			'POST',
+			'PUT',
+			'DELETE',
+			'PATCH',
+			'HEAD',
+			'OPTIONS',
+			'CONNECT',
+			'TRACE'
+		];
 
 		lines.forEach((line, index) => {
 			const trimmed = line.trim();

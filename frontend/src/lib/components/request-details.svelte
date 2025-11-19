@@ -35,7 +35,7 @@
 
 <textarea
 	readonly
-	class="h-full w-full flex-1 resize-none rounded border bg-muted p-2 font-mono text-xs overflow-auto"
+	class="h-full w-full flex-1 resize-none overflow-auto rounded border bg-muted p-2 font-mono text-xs"
 	style="white-space: pre;"
 	value={requestText}
 ></textarea>

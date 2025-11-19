@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	  import * as NativeSelect from "$lib/components/ui/native-select/index.js";
+	import * as NativeSelect from '$lib/components/ui/native-select/index.js';
 	import MonacoEditor from '$lib/components/MonacoEditor.svelte';
 
 	let value = '';
