@@ -174,10 +174,10 @@
 		{:else if actualBody}
 			<div class="mb-2 flex w-full shrink-0 justify-end">
 				<ButtonGroup.Root>
-					<Button size="icon" variant="outline" onclick={handleFormat} title="Format content">
+					<Button size="icon" variant="ghost" onclick={handleFormat} title="Format content">
 						<Wand />
 					</Button>
-					<Button size="icon" variant="outline" onclick={handleCopy} title="Copy to clipboard">
+					<Button size="icon" variant="ghost" onclick={handleCopy} title="Copy to clipboard">
 						<Copy />
 					</Button>
 				</ButtonGroup.Root>
