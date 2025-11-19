@@ -159,7 +159,7 @@
 								class="px-2.5 md:px-2"
 							>
 								{#snippet tooltipContent()}
-									Settings
+									Format
 								{/snippet}
 								{#snippet child({ props })}
 									<a href="/formatter" {...props}>
@@ -169,7 +169,7 @@
 								{/snippet}
 							</Sidebar.MenuButton>
 						</Sidebar.MenuItem>
-						<Sidebar.MenuItem>
+						<!-- <Sidebar.MenuItem>
 							<Sidebar.MenuButton
 								tooltipContentProps={{
 									hidden: false
@@ -186,7 +186,7 @@
 									</a>
 								{/snippet}
 							</Sidebar.MenuButton>
-						</Sidebar.MenuItem>
+						</Sidebar.MenuItem> -->
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton
 								tooltipContentProps={{
