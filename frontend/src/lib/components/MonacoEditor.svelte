@@ -3,6 +3,15 @@
 	import * as monaco from 'monaco-editor';
 	import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 
+	interface Props {
+		value?: string;
+		language?: string;
+		theme?: string;
+		readonly?: boolean;
+		onchange?: (newValue: string) => void;
+		onRunEntry?: (entryIndex: number) => void;
+	}
+
 	let {
 		value = '',
 		language = 'plaintext',
@@ -10,14 +19,7 @@
 		readonly = false,
 		onchange = undefined,
 		onRunEntry = undefined
-	}: {
-		value?: string;
-		language?: string;
-		theme?: string;
-		readonly?: boolean;
-		onchange?: (newValue: string) => void;
-		onRunEntry?: (entryIndex: number) => void;
-	} = $props();
+	}: Props = $props();
 
 	let editorContainer: HTMLDivElement;
 	let editor: monaco.editor.IStandaloneCodeEditor;
