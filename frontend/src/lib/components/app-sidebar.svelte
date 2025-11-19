@@ -6,7 +6,7 @@
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import MoonIcon from '@lucide/svelte/icons/moon';
 	import AudioWaveformIcon from '@lucide/svelte/icons/audio-waveform';
-	import BookOpenIcon from '@lucide/svelte/icons/book-open';
+	import ArrowLeftRightIcon from '@lucide/svelte/icons/arrow-left-right';
 	import * as InputGroup from "$lib/components/ui/input-group/index.js";
 	import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
 	import Wand from '@lucide/svelte/icons/wand';
@@ -18,15 +18,9 @@
 	  import { Input } from "$lib/components/ui/input/index.js";
 	import GalleryVerticalEndIcon from '@lucide/svelte/icons/gallery-vertical-end';
 	import MapIcon from '@lucide/svelte/icons/map';
-	import Settings2Icon from '@lucide/svelte/icons/settings-2';
-	import SquareTerminalIcon from '@lucide/svelte/icons/square-terminal';
-	import NavUser from './nav-user.svelte';
-	import { Label } from '$lib/components/ui/label/index.js';
 	import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import { Switch } from '$lib/components/ui/switch/index.js';
 	import type { ComponentProps } from 'svelte';
-	import NavMain from './nav-main.svelte';
 	import NavFiles from './nav-files.svelte';
 	import { themeStore } from '$lib/stores/themeStore.svelte';
 	import Settings from '@lucide/svelte/icons/settings';
@@ -298,11 +292,10 @@
 								<div
 									class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
 								>
-									<CommandIcon class="size-4" />
+									<ArrowLeftRightIcon class="size-4" />
 								</div>
 								<div class="grid flex-1 text-left text-sm leading-tight">
-									<span class="truncate font-medium">Acme Inc</span>
-									<span class="truncate text-xs">Enterprise</span>
+									<span class="truncate font-medium">Hurl Studio</span>
 								</div>
 							</a>
 						{/snippet}
