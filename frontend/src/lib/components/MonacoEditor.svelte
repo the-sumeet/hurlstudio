@@ -8,17 +8,20 @@
 		language = 'plaintext',
 		theme = 'vs-dark',
 		readonly = false,
-		onchange = undefined
+		onchange = undefined,
+		onRunEntry = undefined
 	}: {
 		value?: string;
 		language?: string;
 		theme?: string;
 		readonly?: boolean;
 		onchange?: (newValue: string) => void;
+		onRunEntry?: (entryIndex: number) => void;
 	} = $props();
 
 	let editorContainer: HTMLDivElement;
 	let editor: monaco.editor.IStandaloneCodeEditor;
+	let codeLensProvider: monaco.IDisposable | null = null;
 
 	// Setup Monaco Editor workers
 	self.MonacoEnvironment = {
@@ -26,6 +29,34 @@
 			return new editorWorker();
 		}
 	};
+
+	// Function to find Hurl entry start lines
+	// Based on Hurl grammar: entry starts with method + SP + url
+	function findHurlEntries(text: string): number[] {
+		const lines = text.split('\n');
+		const entryLines: number[] = [];
+		const httpMethods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'CONNECT', 'TRACE'];
+
+		lines.forEach((line, index) => {
+			const trimmed = line.trim();
+
+			// Skip empty lines and comments
+			if (!trimmed || trimmed.startsWith('#')) {
+				return;
+			}
+
+			// Check if line starts with an HTTP method followed by space
+			// According to Hurl grammar: method SP url
+			for (const method of httpMethods) {
+				if (trimmed.startsWith(method + ' ') || trimmed === method) {
+					entryLines.push(index + 1); // Monaco uses 1-based line numbers
+					break;
+				}
+			}
+		});
+
+		return entryLines;
+	}
 
 	onMount(() => {
 		// Create the editor
@@ -38,7 +69,14 @@
 			fontSize: 14,
 			minimap: { enabled: false },
 			scrollBeyondLastLine: false,
-			wordWrap: 'on'
+			wordWrap: 'on',
+			codeLens: true, // Enable CodeLens
+			// Disable features that aren't supported for plaintext to avoid console warnings
+			links: false,
+			folding: false,
+			hover: {
+				enabled: false
+			}
 		});
 
 		// Listen to content changes
@@ -50,8 +88,50 @@
 			}
 		});
 
+		// Register CodeLens provider for Hurl files
+		if (onRunEntry) {
+			codeLensProvider = monaco.languages.registerCodeLensProvider(language, {
+				provideCodeLenses: (model) => {
+					const text = model.getValue();
+					const entryLines = findHurlEntries(text);
+
+					const lenses = entryLines.map((lineNumber, index) => {
+						const commandId = `run-hurl-entry-${index}`;
+
+						// Register command for this specific entry
+						monaco.editor.registerCommand(commandId, () => {
+							if (onRunEntry) {
+								onRunEntry(index + 1);
+							}
+						});
+
+						return {
+							range: {
+								startLineNumber: lineNumber,
+								startColumn: 1,
+								endLineNumber: lineNumber,
+								endColumn: 1
+							},
+							id: `run-entry-${index}`,
+							command: {
+								id: commandId,
+								title: `▶ Run Entry ${index + 1}`,
+								arguments: [index + 1]
+							}
+						};
+					});
+
+					return { lenses, dispose: () => {} };
+				},
+				resolveCodeLens: (model, codeLens) => codeLens
+			});
+		}
+
 		return () => {
 			editor.dispose();
+			if (codeLensProvider) {
+				codeLensProvider.dispose();
+			}
 		};
 	});
 

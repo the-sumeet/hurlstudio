@@ -55,17 +55,9 @@ func GetHurlPath() (string, error) {
 }
 
 // RunHurl executes a hurl file and returns the JSON report
-// Generates a JSON report in /tmp/hurlstudio/<full-file-path>/
-func (a *App) RunHurl(filePath string) (string, error) {
-	hurlPath, err := GetHurlPath()
-	if err != nil {
-		return "", err
-	}
-
-	// Create report directory preserving the full file path
-	// e.g., /tmp/hurlstudio/Users/sumeet/Projects/myproject/api.hurl/
+// setupReportDir creates and cleans the report directory for a file
+func setupReportDir(filePath string) (string, error) {
 	reportDir := filepath.Join(os.TempDir(), "hurlstudio", filePath)
-	fmt.Println("Report directory:", reportDir)
 
 	// Remove and recreate this specific file's report directory to ensure clean state
 	os.RemoveAll(reportDir)
@@ -73,27 +65,44 @@ func (a *App) RunHurl(filePath string) (string, error) {
 		return "", fmt.Errorf("failed to create report directory: %w", err)
 	}
 
-	// Run hurl with JSON report generation
-	cmd := exec.Command(hurlPath, "--report-json", reportDir, filePath)
-	output, _ := cmd.CombinedOutput()
+	return reportDir, nil
+}
 
-	// Read the generated JSON report
-	// Hurl generates report with the filename: report-<timestamp>.json
-	// We'll read the most recent file
+// readReportFromDir reads the most recent JSON report from the directory
+func readReportFromDir(reportDir string, fallbackOutput []byte) (string, error) {
 	reportFiles, err := filepath.Glob(filepath.Join(reportDir, "*.json"))
 	if err != nil || len(reportFiles) == 0 {
 		// If no JSON report found, return the stdout output
-		return string(output), nil
+		return string(fallbackOutput), nil
 	}
 
 	// Read the most recent report file (last one in sorted list)
 	reportFile := reportFiles[len(reportFiles)-1]
 	jsonContent, err := os.ReadFile(reportFile)
 	if err != nil {
-		return string(output), nil
+		return string(fallbackOutput), nil
 	}
 
 	return string(jsonContent), nil
+}
+
+// Generates a JSON report in /tmp/hurlstudio/<full-file-path>/
+func (a *App) RunHurl(filePath string) (string, error) {
+	hurlPath, err := GetHurlPath()
+	if err != nil {
+		return "", err
+	}
+
+	reportDir, err := setupReportDir(filePath)
+	if err != nil {
+		return "", err
+	}
+
+	// Run hurl with JSON report generation
+	cmd := exec.Command(hurlPath, "--report-json", reportDir, filePath)
+	output, _ := cmd.CombinedOutput()
+
+	return readReportFromDir(reportDir, output)
 }
 
 // RunHurlWithOptions executes a hurl file with custom options
@@ -108,6 +117,33 @@ func (a *App) RunHurlWithOptions(filePath string, options []string) (string, err
 	output, err := cmd.CombinedOutput()
 
 	return string(output), err
+}
+
+// RunHurlEntry runs a specific entry from a Hurl file
+// entryIndex is 1-based (first entry is 1)
+// Uses the same report directory as RunHurl
+func (a *App) RunHurlEntry(filePath string, entryIndex int) (string, error) {
+	hurlPath, err := GetHurlPath()
+	if err != nil {
+		return "", err
+	}
+
+	reportDir, err := setupReportDir(filePath)
+	if err != nil {
+		return "", err
+	}
+
+	// Run only the specific entry
+	cmd := exec.Command(
+		hurlPath,
+		"--report-json", reportDir,
+		"--from-entry", fmt.Sprintf("%d", entryIndex),
+		"--to-entry", fmt.Sprintf("%d", entryIndex),
+		filePath,
+	)
+	output, _ := cmd.CombinedOutput()
+
+	return readReportFromDir(reportDir, output)
 }
 
 // GetExistingReport checks if a report already exists for the given file path

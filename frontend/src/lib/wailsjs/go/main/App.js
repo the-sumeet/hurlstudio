@@ -62,6 +62,10 @@ export function RunHurl(arg1) {
   return window['go']['main']['App']['RunHurl'](arg1);
 }
 
+export function RunHurlEntry(arg1, arg2) {
+  return window['go']['main']['App']['RunHurlEntry'](arg1, arg2);
+}
+
 export function RunHurlWithOptions(arg1, arg2) {
   return window['go']['main']['App']['RunHurlWithOptions'](arg1, arg2);
 }

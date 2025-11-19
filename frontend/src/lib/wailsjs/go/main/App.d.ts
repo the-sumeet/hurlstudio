@@ -32,6 +32,8 @@ export function RenameFile(arg1:string,arg2:string):Promise<void>;
 
 export function RunHurl(arg1:string):Promise<string>;
 
+export function RunHurlEntry(arg1:string,arg2:number):Promise<string>;
+
 export function RunHurlWithOptions(arg1:string,arg2:Array<string>):Promise<string>;
 
 export function SaveFile(arg1:string,arg2:string):Promise<void>;

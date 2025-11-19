@@ -4,7 +4,7 @@
 	import Play from '@lucide/svelte/icons/play';
 	import { fileStore } from '$lib/stores/fileStore.svelte';
 	import { themeStore } from '$lib/stores/themeStore.svelte';
-	import { SaveFile, RunHurl, GetExistingReport } from '$lib/wailsjs/go/main/App';
+	import { SaveFile, RunHurl, GetExistingReport, RunHurlEntry } from '$lib/wailsjs/go/main/App';
 	import AppSidebar from '$lib/components/app-sidebar.svelte';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
@@ -80,6 +80,13 @@
 		if (!fileStore.currentFile) return false;
 		const ext = fileStore.currentFile.name.split('.').pop()?.toLowerCase();
 		return ext === 'md' || ext === 'markdown';
+	});
+
+	// Check if current file is a Hurl file
+	let isHurlFile = $derived.by(() => {
+		if (!fileStore.currentFile) return false;
+		const ext = fileStore.currentFile.name.split('.').pop()?.toLowerCase();
+		return ext === 'hurl';
 	});
 
 	// Determine editor theme based on current theme
@@ -164,6 +171,39 @@
 			isRunning = false;
 		}
 	}
+
+	async function handleRunEntry(entryIndex: number) {
+		if (!fileStore.currentFile) return;
+
+		isRunning = true;
+		output = `Running entry ${entryIndex}...`;
+		report = null;
+		selectedEntryIndex = 0;
+
+		try {
+			const result = await RunHurlEntry(fileStore.currentFile.path, entryIndex);
+			output = result || 'Success! (No output)';
+
+			// Try to parse as JSON report
+			try {
+				const parsed = JSON.parse(result);
+				// Hurl returns an array with a single report
+				if (Array.isArray(parsed) && parsed.length > 0) {
+					report = parsed[0];
+					// Set the selected entry to the one we just ran (entryIndex - 1 for 0-based)
+					selectedEntryIndex = 0;
+				}
+			} catch (e) {
+				// Not a JSON response, keep as plain text
+				console.log('Response is not JSON, displaying as plain text');
+			}
+		} catch (error) {
+			output = `Error: ${error}`;
+			console.error('Failed to run hurl entry:', error);
+		} finally {
+			isRunning = false;
+		}
+	}
 </script>
 
 <Sidebar.Provider style="--sidebar-width: 300px;">
@@ -199,6 +239,7 @@
 						{language}
 						theme={editorTheme}
 						onchange={handleContentChange}
+						onRunEntry={isHurlFile ? handleRunEntry : undefined}
 					/>
 				{:else}
 					<div class="flex h-full items-center justify-center text-muted-foreground">

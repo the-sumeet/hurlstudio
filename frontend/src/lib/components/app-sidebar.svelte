@@ -8,10 +8,10 @@
 	import AudioWaveformIcon from '@lucide/svelte/icons/audio-waveform';
 	import BookOpenIcon from '@lucide/svelte/icons/book-open';
 	import * as InputGroup from "$lib/components/ui/input-group/index.js";
-  import SearchIcon from "@lucide/svelte/icons/search";
-	  import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
-import FilePlus from '@lucide/svelte/icons/file-plus';
-import FolderPlus from '@lucide/svelte/icons/folder-plus';
+	import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
+	import Wand from '@lucide/svelte/icons/wand';
+	import FilePlus from '@lucide/svelte/icons/file-plus';
+	import FolderPlus from '@lucide/svelte/icons/folder-plus';
 	import ChartPieIcon from '@lucide/svelte/icons/chart-pie';
 	import CommandIcon from '@lucide/svelte/icons/command';
 	import FrameIcon from '@lucide/svelte/icons/frame';
@@ -337,6 +337,24 @@ import FolderPlus from '@lucide/svelte/icons/folder-plus';
 								</Sidebar.MenuButton>
 							</Sidebar.MenuItem>
 						{/each}
+						<Sidebar.MenuItem>
+							<Sidebar.MenuButton
+								tooltipContentProps={{
+									hidden: false
+								}}
+								class="px-2.5 md:px-2"
+							>
+								{#snippet tooltipContent()}
+									Settings
+								{/snippet}
+								{#snippet child({ props })}
+									<a href="/formatter" {...props}>
+										<Wand />
+										<span>Formatter</span>
+									</a>
+								{/snippet}
+							</Sidebar.MenuButton>
+						</Sidebar.MenuItem>
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton
 								tooltipContentProps={{
