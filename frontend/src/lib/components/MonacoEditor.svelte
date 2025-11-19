@@ -102,7 +102,8 @@
 
 		// Register CodeLens provider for Hurl files
 		if (onRunEntry) {
-			codeLensProvider = monaco.languages.registerCodeLensProvider(language, {
+			// Register for all languages - we'll filter in the provider
+			codeLensProvider = monaco.languages.registerCodeLensProvider('*', {
 				provideCodeLenses: (model) => {
 					const text = model.getValue();
 					const entryLines = findHurlEntries(text);
