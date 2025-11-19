@@ -2,6 +2,7 @@
 	import * as Resizable from '$lib/components/ui/resizable/index.js';
 	import MonacoEditor from '$lib/components/MonacoEditor.svelte';
 	import Play from '@lucide/svelte/icons/play';
+	import Copy from '@lucide/svelte/icons/copy';
 	import { fileStore } from '$lib/stores/fileStore.svelte';
 	import { themeStore } from '$lib/stores/themeStore.svelte';
 	import { SaveFile, RunHurl, GetExistingReport, RunHurlEntry } from '$lib/wailsjs/go/main/App';
@@ -213,6 +214,17 @@
 			isRunning = false;
 		}
 	}
+
+	// Copy curl command to clipboard
+	async function copyCurlCommand() {
+		if (!selectedEntry?.curl_cmd) return;
+
+		try {
+			await navigator.clipboard.writeText(selectedEntry.curl_cmd);
+		} catch (error) {
+			console.error('Failed to copy curl command:', error);
+		}
+	}
 </script>
 
 <Sidebar.Provider style="--sidebar-width: 300px;">
@@ -271,17 +283,32 @@
 				{:else}
 					<!-- Hurl Response -->
 					<div class="flex h-full flex-col gap-4 p-2">
-						<!-- Entries -->
-						{#if report && report.entries.length > 1}
-							<div class="flex-shrink-0">
-								<NativeSelect.Root bind:value={selectedEntryIndex}>
-									{#each report.entries as entry, index}
-										<NativeSelect.Option value={index}>
-											{entry.calls[0]?.request.method}
-											{entry.calls[0]?.request.url}
-										</NativeSelect.Option>
-									{/each}
-								</NativeSelect.Root>
+						<!-- Entries and Curl Copy -->
+						{#if report && report.entries.length > 0}
+							<div class="flex flex-shrink-0 gap-2">
+								{#if report.entries.length > 1}
+									<div class="flex-1">
+										<NativeSelect.Root bind:value={selectedEntryIndex}>
+											{#each report.entries as entry, index}
+												<NativeSelect.Option value={index}>
+													{entry.calls[0]?.request.method}
+													{entry.calls[0]?.request.url}
+												</NativeSelect.Option>
+											{/each}
+										</NativeSelect.Root>
+									</div>
+								{/if}
+								{#if selectedEntry?.curl_cmd}
+									<Button
+										size="sm"
+										variant="outline"
+										onclick={copyCurlCommand}
+										title="Copy curl command"
+									>
+										<Copy class="h-4 w-4" />
+										Curl
+									</Button>
+								{/if}
 							</div>
 						{/if}
 
