@@ -29,19 +29,7 @@
 	} from '$lib/wailsjs/go/main/App';
 	import FolderUp from '@lucide/svelte/icons/folder-up';
 	import { fileStore } from '$lib/stores/fileStore.svelte';
-
-	type FileEntry = {
-		name: string;
-		path: string;
-		isDirectory: boolean;
-		size: number;
-		modTime: string;
-	};
-
-	type CurrentFilesState = {
-		currentDir?: FileEntry;
-		currentFile?: FileEntry;
-	};
+	import type { FileEntry, CurrentFilesState } from '$lib/types/file';
 
 	let files = $state<FileEntry[]>([]);
 	let currentState = $state<CurrentFilesState>({});

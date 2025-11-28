@@ -1,10 +1,4 @@
-type FileEntry = {
-	name: string;
-	path: string;
-	isDirectory: boolean;
-	size: number;
-	modTime: string;
-};
+import type { FileEntry } from '$lib/types/file';
 
 type FileState = {
 	currentFile: FileEntry | null;
