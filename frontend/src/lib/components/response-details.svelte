@@ -9,6 +9,7 @@
 	import { Button } from './ui/button/index.js';
 	import Wand from '@lucide/svelte/icons/wand';
 	import Copy from '@lucide/svelte/icons/copy';
+	import { getHttpStatusColorClass } from '$lib/utils/httpStatus';
 
 	let { response }: { response: Response } = $props();
 
@@ -54,14 +55,7 @@
 	}
 
 	// Determine status color
-	let statusColor = $derived.by(() => {
-		const status = response.status;
-		if (status >= 200 && status < 300) return 'text-green-600';
-		if (status >= 300 && status < 400) return 'text-blue-600';
-		if (status >= 400 && status < 500) return 'text-orange-600';
-		if (status >= 500) return 'text-red-600';
-		return '';
-	});
+	let statusColor = $derived(getHttpStatusColorClass(response.status));
 
 	// Determine editor theme based on current theme
 	let editorTheme = $derived(themeStore.current === 'dark' ? 'vs-dark' : 'vs');

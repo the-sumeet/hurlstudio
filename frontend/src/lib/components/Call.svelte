@@ -5,7 +5,7 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import RequestDetails from '$lib/components/request-details.svelte';
 	import ResponseDetails from '$lib/components/response-details.svelte';
-	import { Root } from './ui/avatar';
+	import { getHttpStatusColorClass } from '$lib/utils/httpStatus';
 
 	// Get badge variant based on HTTP method
 	function getMethodVariant(method: string): 'default' | 'secondary' | 'destructive' | 'outline' {
@@ -21,16 +21,6 @@
 				return 'destructive'; // Red
 			default:
 				return 'outline';
-		}
-	}
-
-	function getStatusColor(status: number): string {
-		if (status >= 200 && status < 300) {
-			return '-green-600';
-		} else if (status >= 400) {
-			return '-red-600';
-		} else {
-			return '-blue-600';
 		}
 	}
 </script>
@@ -72,7 +62,9 @@
 			<Card.Footer class="flex-shrink-0">
 				<div class="flex">
 					<div class="flex gap-1">
-						<Badge variant="outline" class={`border border${getStatusColor(call.response.status)}`}
+						<Badge
+							variant="outline"
+							class={`border ${getHttpStatusColorClass(call.response.status, 'border-')}`}
 							>Status {call.response.status}</Badge
 						>
 					</div>
