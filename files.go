@@ -24,6 +24,36 @@ type CurrentFilesState struct {
 	CurrentFile *FileEntry `json:"currentFile,omitempty"`
 }
 
+// createDirEntry creates a FileEntry for a directory path
+func createDirEntry(dirPath string) (*FileEntry, error) {
+	info, err := os.Stat(dirPath)
+	if err != nil {
+		return nil, err
+	}
+	return &FileEntry{
+		Name:        filepath.Base(dirPath),
+		Path:        dirPath,
+		IsDirectory: true,
+		Size:        info.Size(),
+		ModTime:     info.ModTime(),
+	}, nil
+}
+
+// createFileEntry creates a FileEntry for a file path
+func createFileEntry(filePath string) (*FileEntry, error) {
+	info, err := os.Stat(filePath)
+	if err != nil {
+		return nil, err
+	}
+	return &FileEntry{
+		Name:        filepath.Base(filePath),
+		Path:        filePath,
+		IsDirectory: false,
+		Size:        info.Size(),
+		ModTime:     info.ModTime(),
+	}, nil
+}
+
 // ListFiles lists all files and directories in the given path
 // Filters to only show directories and .hurl files
 func (a *App) ListFiles(path string) ([]FileEntry, error) {
@@ -102,33 +132,21 @@ func (a *App) GoUp() (*CurrentFilesState, error) {
 	// Update current directory to parent
 	a.currentDir = parentDir
 
-	// Get parent directory info
-	dirInfo, err := os.Stat(parentDir)
+	// Create directory entry
+	dirEntry, err := createDirEntry(parentDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get directory info for %s: %w", parentDir, err)
 	}
 
 	state := &CurrentFilesState{
-		CurrentDir: &FileEntry{
-			Name:        filepath.Base(parentDir),
-			Path:        parentDir,
-			IsDirectory: true,
-			Size:        dirInfo.Size(),
-			ModTime:     dirInfo.ModTime(),
-		},
+		CurrentDir: dirEntry,
 	}
 
 	// Preserve CurrentFile if it still exists
 	if a.currentFile != "" {
-		fileInfo, err := os.Stat(a.currentFile)
+		fileEntry, err := createFileEntry(a.currentFile)
 		if err == nil {
-			state.CurrentFile = &FileEntry{
-				Name:        filepath.Base(a.currentFile),
-				Path:        a.currentFile,
-				IsDirectory: false,
-				Size:        fileInfo.Size(),
-				ModTime:     fileInfo.ModTime(),
-			}
+			state.CurrentFile = fileEntry
 		}
 	}
 
@@ -160,29 +178,17 @@ func (a *App) GetCurrentFilesState() CurrentFilesState {
 
 	// Populate CurrentDir
 	if a.currentDir != "" {
-		dirInfo, err := os.Stat(a.currentDir)
+		dirEntry, err := createDirEntry(a.currentDir)
 		if err == nil {
-			state.CurrentDir = &FileEntry{
-				Name:        filepath.Base(a.currentDir),
-				Path:        a.currentDir,
-				IsDirectory: true,
-				Size:        dirInfo.Size(),
-				ModTime:     dirInfo.ModTime(),
-			}
+			state.CurrentDir = dirEntry
 		}
 	}
 
 	// Populate CurrentFile
 	if a.currentFile != "" {
-		fileInfo, err := os.Stat(a.currentFile)
+		fileEntry, err := createFileEntry(a.currentFile)
 		if err == nil {
-			state.CurrentFile = &FileEntry{
-				Name:        filepath.Base(a.currentFile),
-				Path:        a.currentFile,
-				IsDirectory: false,
-				Size:        fileInfo.Size(),
-				ModTime:     fileInfo.ModTime(),
-			}
+			state.CurrentFile = fileEntry
 		}
 	}
 
@@ -359,28 +365,16 @@ func (a *App) SaveLastOpenedState() error {
 
 	state := CurrentFilesState{}
 	if a.currentDir != "" {
-		dirInfo, err := os.Stat(a.currentDir)
+		dirEntry, err := createDirEntry(a.currentDir)
 		if err == nil {
-			state.CurrentDir = &FileEntry{
-				Name:        filepath.Base(a.currentDir),
-				Path:        a.currentDir,
-				IsDirectory: true,
-				Size:        dirInfo.Size(),
-				ModTime:     dirInfo.ModTime(),
-			}
+			state.CurrentDir = dirEntry
 		}
 	}
 
 	if a.currentFile != "" {
-		fileInfo, err := os.Stat(a.currentFile)
+		fileEntry, err := createFileEntry(a.currentFile)
 		if err == nil {
-			state.CurrentFile = &FileEntry{
-				Name:        filepath.Base(a.currentFile),
-				Path:        a.currentFile,
-				IsDirectory: false,
-				Size:        fileInfo.Size(),
-				ModTime:     fileInfo.ModTime(),
-			}
+			state.CurrentFile = fileEntry
 		}
 	}
 
