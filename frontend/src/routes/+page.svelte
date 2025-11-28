@@ -13,6 +13,7 @@
 	import * as NativeSelect from '$lib/components/ui/native-select/index.js';
 	import Call from '$lib/components/Call.svelte';
 	import { marked } from 'marked';
+	import { Kbd } from '$lib/components/ui/kbd/index.js';
 
 	let editorContent = $derived(fileStore.content);
 	let output = $state('');
@@ -225,7 +226,20 @@
 			console.error('Failed to copy curl command:', error);
 		}
 	}
+
+	// Handle keyboard shortcuts
+	function handleKeydown(event: KeyboardEvent) {
+		// Cmd+R (Mac) or Ctrl+R (Windows/Linux) to run
+		if ((event.metaKey || event.ctrlKey) && event.key === 'r') {
+			event.preventDefault(); // Prevent browser refresh
+			if (fileStore.currentFile && !isMarkdownFile && !isRunning) {
+				handleRun();
+			}
+		}
+	}
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <Sidebar.Provider style="--sidebar-width: 300px;">
 	<AppSidebar />
@@ -244,9 +258,12 @@
 			</div>
 			{#if fileStore.currentFile && !isMarkdownFile}
 				<div class="flex gap-2">
-					<Button onclick={handleRun} disabled={isRunning}>
+					<Button onclick={handleRun} disabled={isRunning} class="gap-2">
 						<Play />
 						{isRunning ? 'Running...' : 'Run'}
+						{#if !isRunning}
+							<Kbd>⌘R</Kbd>
+						{/if}
 					</Button>
 				</div>
 			{/if}
