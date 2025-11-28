@@ -33,6 +33,14 @@
 	let createInputValue = $state('');
 	let createType = $state<'file' | 'folder'>('file'); // Track if creating file or folder
 	let createError = $state('');
+	let createInput: HTMLInputElement | null = null;
+
+	// Auto-focus input when shown
+	$effect(() => {
+		if (showCreateInput && createInput) {
+			createInput.focus();
+		}
+	});
 
 	function handleNewFileClick() {
 		createType = 'file';
@@ -263,6 +271,7 @@
 					<div class="flex flex-col gap-2">
 						<InputGroup.Root>
 							<InputGroup.Input
+								bind:ref={createInput}
 								placeholder={createType === 'file' ? 'Enter file name...' : 'Enter folder name...'}
 								bind:value={createInputValue}
 								autocapitalize="off"
