@@ -16,6 +16,7 @@
 	import NavFiles from './nav-files.svelte';
 	import { themeStore } from '$lib/stores/themeStore.svelte';
 	import { page } from '$app/stores';
+	import { Kbd } from '$lib/components/ui/kbd/index.js';
 	import {
 		CreateFile,
 		CreateDir,
@@ -114,7 +115,39 @@
 			createError = `Failed to create ${createType}: ${error}`;
 		}
 	}
+
+	// Detect OS for keyboard shortcuts
+	const isMac =
+		typeof navigator !== 'undefined' &&
+		(navigator.platform.toUpperCase().indexOf('MAC') >= 0 ||
+			navigator.userAgent.toUpperCase().indexOf('MAC') >= 0);
+
+	// Handle keyboard shortcuts
+	function handleKeydown(event: KeyboardEvent) {
+		// ESC to cancel create input
+		if (event.key === 'Escape' && showCreateInput) {
+			handleCancel();
+			return;
+		}
+
+		// Cmd+N (Mac) or Ctrl+N (Windows/Linux) for new file
+		if ((event.metaKey || event.ctrlKey) && event.key === 'n' && !event.shiftKey) {
+			event.preventDefault();
+			if (!showCreateInput) {
+				handleNewFileClick();
+			}
+		}
+		// Cmd+Shift+N (Mac) or Ctrl+Shift+N (Windows/Linux) for new folder
+		if ((event.metaKey || event.ctrlKey) && event.key === 'n' && event.shiftKey) {
+			event.preventDefault();
+			if (!showCreateInput) {
+				handleNewFolderClick();
+			}
+		}
+	}
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <Sidebar.Root
 	bind:ref
@@ -246,15 +279,27 @@
 								{createError}
 							</div>
 						{/if}
-						<Button class="w-full" variant="outline" onclick={handleCancel}>Cancel</Button>
+						<Button class="w-full gap-2" variant="outline" onclick={handleCancel}
+							>Cancel <Kbd>ESC</Kbd></Button
+						>
 					</div>
 				{:else}
 					<ButtonGroup.Root class="flex w-full">
-						<Button class="flex-1" size="icon" variant="outline" onclick={handleNewFileClick}>
-							<FilePlus />
+						<Button
+							class="flex-1 flex-col gap-1 p-2"
+							variant="outline"
+							onclick={handleNewFileClick}
+						>
+							<FilePlus class="h-4 w-4" />
+							<Kbd class="text-[8px]">{isMac ? '⌘N' : 'Ctrl+N'}</Kbd>
 						</Button>
-						<Button class="flex-1" size="icon" variant="outline" onclick={handleNewFolderClick}>
-							<FolderPlus />
+						<Button
+							class="flex-1 flex-col gap-1 p-2"
+							variant="outline"
+							onclick={handleNewFolderClick}
+						>
+							<FolderPlus class="h-4 w-4" />
+							<Kbd class="text-[8px]">{isMac ? '⌘⇧N' : 'Ctrl+⇧N'}</Kbd>
 						</Button>
 					</ButtonGroup.Root>
 				{/if}
