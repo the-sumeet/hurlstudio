@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 //go:embed binaries/*
@@ -86,6 +87,48 @@ func readReportFromDir(reportDir string, fallbackOutput []byte) (string, error) 
 	return string(jsonContent), nil
 }
 
+// createVariablesFile creates a temporary variables file from environment variables
+func (a *App) createVariablesFile() (string, error) {
+	// Get active environment
+	activeEnv, err := a.GetActiveEnvironment()
+	if err != nil {
+		// If error, just return empty string (no variables file)
+		return "", nil
+	}
+
+	// Get flattened variables for active environment
+	vars, err := a.GetFlattenedVariables(activeEnv)
+	if err != nil {
+		return "", nil
+	}
+
+	// If no variables, don't create a file
+	if len(vars) == 0 {
+		return "", nil
+	}
+
+	// Create temp variables file
+	tempFile, err := os.CreateTemp("", "hurl-vars-*.txt")
+	if err != nil {
+		return "", fmt.Errorf("failed to create temp variables file: %w", err)
+	}
+	defer tempFile.Close()
+
+	// Write variables in key=value format
+	var lines []string
+	for key, value := range vars {
+		lines = append(lines, fmt.Sprintf("%s=%s", key, value))
+	}
+
+	content := strings.Join(lines, "\n")
+	if _, err := tempFile.WriteString(content); err != nil {
+		os.Remove(tempFile.Name())
+		return "", fmt.Errorf("failed to write variables file: %w", err)
+	}
+
+	return tempFile.Name(), nil
+}
+
 // Generates a JSON report in /tmp/hurlstudio/<full-file-path>/
 func (a *App) RunHurl(filePath string) (string, error) {
 	hurlPath, err := GetHurlPath()
@@ -98,8 +141,24 @@ func (a *App) RunHurl(filePath string) (string, error) {
 		return "", err
 	}
 
+	// Create variables file if needed
+	varsFile, err := a.createVariablesFile()
+	if err != nil {
+		return "", err
+	}
+	if varsFile != "" {
+		defer os.Remove(varsFile)
+	}
+
+	// Build command with variables if present
+	args := []string{"--report-json", reportDir}
+	if varsFile != "" {
+		args = append(args, "--variables-file", varsFile)
+	}
+	args = append(args, filePath)
+
 	// Run hurl with JSON report generation
-	cmd := exec.Command(hurlPath, "--report-json", reportDir, filePath)
+	cmd := exec.Command(hurlPath, args...)
 	output, _ := cmd.CombinedOutput()
 
 	return readReportFromDir(reportDir, output)
@@ -133,14 +192,26 @@ func (a *App) RunHurlEntry(filePath string, entryIndex int) (string, error) {
 		return "", err
 	}
 
+	// Create variables file if needed
+	varsFile, err := a.createVariablesFile()
+	if err != nil {
+		return "", err
+	}
+	if varsFile != "" {
+		defer os.Remove(varsFile)
+	}
+
+	// Build command with variables if present
+	args := []string{"--report-json", reportDir}
+	if varsFile != "" {
+		args = append(args, "--variables-file", varsFile)
+	}
+	args = append(args, "--from-entry", fmt.Sprintf("%d", entryIndex))
+	args = append(args, "--to-entry", fmt.Sprintf("%d", entryIndex))
+	args = append(args, filePath)
+
 	// Run only the specific entry
-	cmd := exec.Command(
-		hurlPath,
-		"--report-json", reportDir,
-		"--from-entry", fmt.Sprintf("%d", entryIndex),
-		"--to-entry", fmt.Sprintf("%d", entryIndex),
-		filePath,
-	)
+	cmd := exec.Command(hurlPath, args...)
 	output, _ := cmd.CombinedOutput()
 
 	return readReportFromDir(reportDir, output)

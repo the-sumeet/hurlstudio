@@ -18,6 +18,10 @@ export function DeleteFile(arg1) {
   return window['go']['main']['App']['DeleteFile'](arg1);
 }
 
+export function GetActiveEnvironment() {
+  return window['go']['main']['App']['GetActiveEnvironment']();
+}
+
 export function GetCurrentFilesState() {
   return window['go']['main']['App']['GetCurrentFilesState']();
 }
@@ -28,6 +32,10 @@ export function GetExistingReport(arg1) {
 
 export function GetFileContent(arg1) {
   return window['go']['main']['App']['GetFileContent'](arg1);
+}
+
+export function GetFlattenedVariables(arg1) {
+  return window['go']['main']['App']['GetFlattenedVariables'](arg1);
 }
 
 export function GetResponseBody(arg1, arg2) {
@@ -44,6 +52,10 @@ export function Greet(arg1) {
 
 export function ListFiles(arg1) {
   return window['go']['main']['App']['ListFiles'](arg1);
+}
+
+export function LoadEnvVariables() {
+  return window['go']['main']['App']['LoadEnvVariables']();
 }
 
 export function LoadLastOpenedState() {
@@ -68,6 +80,10 @@ export function RunHurlEntry(arg1, arg2) {
 
 export function RunHurlWithOptions(arg1, arg2) {
   return window['go']['main']['App']['RunHurlWithOptions'](arg1, arg2);
+}
+
+export function SaveEnvVariables(arg1) {
+  return window['go']['main']['App']['SaveEnvVariables'](arg1);
 }
 
 export function SaveFile(arg1, arg2) {

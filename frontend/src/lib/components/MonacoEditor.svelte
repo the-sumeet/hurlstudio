@@ -2,6 +2,10 @@
 	import { onMount, onDestroy } from 'svelte';
 	import * as monaco from 'monaco-editor';
 	import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+	import {
+		GetFlattenedVariables,
+		GetActiveEnvironment
+	} from '$lib/wailsjs/go/main/App';
 
 	interface Props {
 		value?: string;
@@ -24,6 +28,9 @@
 	let editorContainer: HTMLDivElement;
 	let editor: monaco.editor.IStandaloneCodeEditor;
 	let codeLensProvider: monaco.IDisposable | null = null;
+	let hoverProvider: monaco.IDisposable | null = null;
+	let commandDisposables: monaco.IDisposable[] = [];
+	let commandIdCounter = 0;
 
 	// Setup Monaco Editor workers
 	self.MonacoEnvironment = {
@@ -82,12 +89,11 @@
 			minimap: { enabled: false },
 			scrollBeyondLastLine: false,
 			wordWrap: 'on',
-			codeLens: true, // Enable CodeLens
-			// Disable features that aren't supported for plaintext to avoid console warnings
+			codeLens: true,
 			links: false,
 			folding: false,
 			hover: {
-				enabled: false
+				enabled: true
 			}
 		});
 
@@ -108,15 +114,20 @@
 					const text = model.getValue();
 					const entryLines = findHurlEntries(text);
 
-					const lenses = entryLines.map((lineNumber, index) => {
-						const commandId = `run-hurl-entry-${index}`;
+					// Clear previous command disposables
+					commandDisposables.forEach((d) => d.dispose());
+					commandDisposables = [];
 
-						// Register command for this specific entry
-						monaco.editor.registerCommand(commandId, () => {
+					const lenses = entryLines.map((lineNumber, index) => {
+						const commandId = `run-hurl-entry-${commandIdCounter++}`;
+
+						// Register command and store disposable
+						const disposable = monaco.editor.registerCommand(commandId, () => {
 							if (onRunEntry) {
 								onRunEntry(index + 1);
 							}
 						});
+						commandDisposables.push(disposable);
 
 						return {
 							range: {
@@ -139,19 +150,21 @@
 				resolveCodeLens: (model, codeLens) => codeLens
 			});
 		}
-
-		return () => {
-			editor.dispose();
-			if (codeLensProvider) {
-				codeLensProvider.dispose();
-			}
-		};
 	});
 
 	onDestroy(() => {
 		if (editor) {
 			editor.dispose();
 		}
+		if (codeLensProvider) {
+			codeLensProvider.dispose();
+		}
+		if (hoverProvider) {
+			hoverProvider.dispose();
+		}
+		// Dispose all command registrations
+		commandDisposables.forEach((d) => d.dispose());
+		commandDisposables = [];
 	});
 
 	// Update editor when value changes externally
@@ -175,6 +188,76 @@
 	$effect(() => {
 		if (editor) {
 			monaco.editor.setTheme(theme);
+		}
+	});
+
+	// Manage hover provider based on language
+	$effect(() => {
+		if (!editor) return;
+
+		// Dispose existing hover provider when language changes
+		if (hoverProvider) {
+			hoverProvider.dispose();
+			hoverProvider = null;
+		}
+
+		// Only register hover provider for plaintext (Hurl files)
+		if (language === 'plaintext') {
+			hoverProvider = monaco.languages.registerHoverProvider('plaintext', {
+				provideHover: async (model, position) => {
+					const line = model.getLineContent(position.lineNumber);
+
+					// Find if we're hovering over a variable {{...}}
+					const lineUpToPosition = line.substring(0, position.column - 1);
+					const lineFromPosition = line.substring(position.column - 1);
+
+					// Check if there's {{ before and }} after the current position
+					const beforeMatch = lineUpToPosition.match(/\{\{([^}]*)$/);
+					const afterMatch = lineFromPosition.match(/^([^}]*)\}\}/);
+
+					if (!beforeMatch || !afterMatch) return null;
+
+					// Extract the full variable name
+					const variableName = (beforeMatch[1] + afterMatch[1]).trim();
+
+					if (!variableName) return null;
+
+					try {
+						// Get the active environment and flattened variables
+						const activeEnv = await GetActiveEnvironment();
+						const variables = await GetFlattenedVariables(activeEnv);
+
+						if (variables && variables[variableName]) {
+							return {
+								range: new monaco.Range(
+									position.lineNumber,
+									position.column - beforeMatch[1].length - 2,
+									position.lineNumber,
+									position.column + afterMatch[1].length + 2
+								),
+								contents: [
+									{ value: `**${variableName}**: \`${variables[variableName]}\`` }
+								]
+							};
+						} else {
+							return {
+								range: new monaco.Range(
+									position.lineNumber,
+									position.column - beforeMatch[1].length - 2,
+									position.lineNumber,
+									position.column + afterMatch[1].length + 2
+								),
+								contents: [
+									{ value: `**${variableName}**: _Variable not defined_` }
+								]
+							};
+						}
+					} catch (error) {
+						console.error('Error fetching environment variables:', error);
+						return null;
+					}
+				}
+			});
 		}
 	});
 </script>

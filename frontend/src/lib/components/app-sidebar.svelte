@@ -6,6 +6,7 @@
 	import Wand from '@lucide/svelte/icons/wand';
 	import FilePlus from '@lucide/svelte/icons/file-plus';
 	import FolderPlus from '@lucide/svelte/icons/folder-plus';
+	import Braces from '@lucide/svelte/icons/braces';
 	import * as InputGroup from '$lib/components/ui/input-group/index.js';
 	import * as ButtonGroup from '$lib/components/ui/button-group/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
@@ -206,6 +207,24 @@
 									<a href="/formatter" {...props}>
 										<Wand />
 										<span>Formatter</span>
+									</a>
+								{/snippet}
+							</Sidebar.MenuButton>
+						</Sidebar.MenuItem>
+						<Sidebar.MenuItem>
+							<Sidebar.MenuButton
+								tooltipContentProps={{
+									hidden: false
+								}}
+								class="px-2.5 md:px-2"
+							>
+								{#snippet tooltipContent()}
+									Variables
+								{/snippet}
+								{#snippet child({ props })}
+									<a href="/variables" {...props}>
+										<Braces />
+										<span>Variables</span>
 									</a>
 								{/snippet}
 							</Sidebar.MenuButton>

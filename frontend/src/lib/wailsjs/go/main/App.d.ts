@@ -10,11 +10,15 @@ export function CreateFile(arg1:string):Promise<void>;
 
 export function DeleteFile(arg1:string):Promise<void>;
 
+export function GetActiveEnvironment():Promise<string>;
+
 export function GetCurrentFilesState():Promise<main.CurrentFilesState>;
 
 export function GetExistingReport(arg1:string):Promise<string>;
 
 export function GetFileContent(arg1:string):Promise<string>;
+
+export function GetFlattenedVariables(arg1:string):Promise<Record<string, string>>;
 
 export function GetResponseBody(arg1:string,arg2:string):Promise<string>;
 
@@ -23,6 +27,8 @@ export function GoUp():Promise<main.CurrentFilesState>;
 export function Greet(arg1:string):Promise<string>;
 
 export function ListFiles(arg1:string):Promise<Array<main.FileEntry>>;
+
+export function LoadEnvVariables():Promise<string>;
 
 export function LoadLastOpenedState():Promise<main.CurrentFilesState>;
 
@@ -35,6 +41,8 @@ export function RunHurl(arg1:string):Promise<string>;
 export function RunHurlEntry(arg1:string,arg2:number):Promise<string>;
 
 export function RunHurlWithOptions(arg1:string,arg2:Array<string>):Promise<string>;
+
+export function SaveEnvVariables(arg1:string):Promise<void>;
 
 export function SaveFile(arg1:string,arg2:string):Promise<void>;
 
