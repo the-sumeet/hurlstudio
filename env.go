@@ -85,6 +85,47 @@ func (a *App) LoadEnvVariables() (string, error) {
 	return string(data), nil
 }
 
+// loadEnvConfig loads and caches the environment config
+func (a *App) loadEnvConfig() (*EnvConfig, error) {
+	// Check cache first (read lock)
+	a.envConfigMu.RLock()
+	if a.envConfig != nil {
+		defer a.envConfigMu.RUnlock()
+		return a.envConfig, nil
+	}
+	a.envConfigMu.RUnlock()
+
+	// Load config (write lock)
+	a.envConfigMu.Lock()
+	defer a.envConfigMu.Unlock()
+
+	// Double-check after acquiring write lock
+	if a.envConfig != nil {
+		return a.envConfig, nil
+	}
+
+	// Load from file
+	configJSON, err := a.LoadEnvVariables()
+	if err != nil {
+		return nil, err
+	}
+
+	var config EnvConfig
+	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
+		return nil, fmt.Errorf("failed to parse env.json: %w", err)
+	}
+
+	a.envConfig = &config
+	return a.envConfig, nil
+}
+
+// invalidateEnvCache clears the cached environment config
+func (a *App) invalidateEnvCache() {
+	a.envConfigMu.Lock()
+	defer a.envConfigMu.Unlock()
+	a.envConfig = nil
+}
+
 // SaveEnvVariables saves the environment variables to env.json
 func (a *App) SaveEnvVariables(content string) error {
 	// Validate JSON structure first
@@ -122,21 +163,19 @@ func (a *App) SaveEnvVariables(content string) error {
 		return fmt.Errorf("failed to write env.json: %w", err)
 	}
 
+	// Invalidate cache after save
+	a.invalidateEnvCache()
+
 	return nil
 }
 
 // GetFlattenedVariables returns a flattened map of variables for the given environment
 // Priority: environment variables override global variables
 func (a *App) GetFlattenedVariables(environment string) (map[string]string, error) {
-	// Load config
-	configJSON, err := a.LoadEnvVariables()
+	// Load config from cache
+	config, err := a.loadEnvConfig()
 	if err != nil {
 		return nil, err
-	}
-
-	var config EnvConfig
-	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
-		return nil, fmt.Errorf("failed to parse env.json: %w", err)
 	}
 
 	// Start with global variables
@@ -157,14 +196,10 @@ func (a *App) GetFlattenedVariables(environment string) (map[string]string, erro
 
 // GetActiveEnvironment returns the currently active environment
 func (a *App) GetActiveEnvironment() (string, error) {
-	configJSON, err := a.LoadEnvVariables()
+	// Load config from cache
+	config, err := a.loadEnvConfig()
 	if err != nil {
 		return "", err
-	}
-
-	var config EnvConfig
-	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
-		return "", fmt.Errorf("failed to parse env.json: %w", err)
 	}
 
 	return config.ActiveEnvironment, nil

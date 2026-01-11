@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sync"
 )
 
 // App struct
@@ -12,6 +13,10 @@ type App struct {
 
 	currentDir  string
 	currentFile string
+
+	// Environment config caching
+	envConfig   *EnvConfig
+	envConfigMu sync.RWMutex
 }
 
 // NewApp creates a new App application struct
