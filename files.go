@@ -9,6 +9,21 @@ import (
 	"time"
 )
 
+// SupportedExtensions defines the file extensions that can be displayed and created
+var SupportedExtensions = []string{".hurl", ".md", ".markdown"}
+
+// isSupportedExtension checks if the given extension is supported
+func isSupportedExtension(ext string) bool {
+	ext = strings.ToLower(ext)
+	for _, supported := range SupportedExtensions {
+		if ext == supported {
+			return true
+		}
+	}
+	return false
+}
+
+
 // FileEntry represents a file or directory in the file system
 type FileEntry struct {
 	Name        string    `json:"name"`
@@ -83,7 +98,7 @@ func (a *App) ListFiles(path string) ([]FileEntry, error) {
 		// Only include directories, .hurl files, or markdown files
 		if !entry.IsDir() {
 			ext := strings.ToLower(filepath.Ext(entry.Name()))
-			if ext != ".hurl" && ext != ".md" && ext != ".markdown" {
+			if !isSupportedExtension(ext) {
 				continue
 			}
 		}
