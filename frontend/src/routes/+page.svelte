@@ -14,6 +14,7 @@
 	import Call from '$lib/components/Call.svelte';
 	import { marked } from 'marked';
 	import { Kbd } from '$lib/components/ui/kbd/index.js';
+	import { toast } from 'svelte-sonner';
 
 	let editorContent = $derived(fileStore.content);
 	let output = $state('');
@@ -57,6 +58,9 @@
 			}
 		} catch (error) {
 			console.error('Failed to load existing report:', error);
+			toast.error('Failed to load report', {
+				description: error instanceof Error ? error.message : String(error)
+			});
 		}
 	}
 
@@ -144,10 +148,16 @@
 	async function handleContentChange(newContent: string) {
 		if (fileStore.currentFile) {
 			try {
+				fileStore.setSaveStatus('saving');
 				await SaveFile(fileStore.currentFile.path, newContent);
 				fileStore.setContent(newContent);
+				fileStore.setSaveStatus('saved');
 			} catch (error) {
 				console.error('Failed to save file:', error);
+				fileStore.setSaveStatus('unsaved');
+				toast.error('Failed to save file', {
+					description: error instanceof Error ? error.message : String(error)
+				});
 			}
 		}
 	}
@@ -170,6 +180,7 @@
 				// Hurl returns an array with a single report
 				if (Array.isArray(parsed) && parsed.length > 0) {
 					report = parsed[0];
+					toast.success('Hurl executed successfully');
 				}
 			} catch (e) {
 				// Not a JSON response, keep as plain text
@@ -178,6 +189,9 @@
 		} catch (error) {
 			output = `Error: ${error}`;
 			console.error('Failed to run hurl:', error);
+			toast.error('Failed to run Hurl', {
+				description: error instanceof Error ? error.message : String(error)
+			});
 		} finally {
 			isRunning = false;
 		}
@@ -211,6 +225,9 @@
 		} catch (error) {
 			output = `Error: ${error}`;
 			console.error('Failed to run hurl entry:', error);
+			toast.error('Failed to run Hurl entry', {
+				description: error instanceof Error ? error.message : String(error)
+			});
 		} finally {
 			isRunning = false;
 		}

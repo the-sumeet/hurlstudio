@@ -18,6 +18,7 @@
 	import { themeStore } from '$lib/stores/themeStore.svelte';
 	import { page } from '$app/stores';
 	import { Kbd } from '$lib/components/ui/kbd/index.js';
+	import { toast } from 'svelte-sonner';
 	import {
 		CreateFile,
 		CreateDir,
@@ -100,6 +101,7 @@
 
 				// Trigger a refresh of the file list
 				window.dispatchEvent(new CustomEvent('refresh-files'));
+				toast.success(`File "${fileName}" created successfully`);
 			} else {
 				// Create folder - no validation needed
 				await CreateDir(createInputValue.trim());
@@ -113,6 +115,7 @@
 
 				// Trigger a refresh of the file list
 				window.dispatchEvent(new CustomEvent('refresh-files'));
+				toast.success(`Folder "${createInputValue.trim()}" created successfully`);
 			}
 
 			// Reset state
@@ -122,6 +125,9 @@
 		} catch (error) {
 			console.error(`Failed to create ${createType}:`, error);
 			createError = `Failed to create ${createType}: ${error}`;
+			toast.error(`Failed to create ${createType}`, {
+				description: error instanceof Error ? error.message : String(error)
+			});
 		}
 	}
 
