@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { Request } from '../../app.d.ts';
+	// Using global App.Request type from app.d.ts
 
-	let { request }: { request: Request } = $props();
+	let { request }: { request: App.Request } = $props();
 
 	// Format request details as text for textarea
 	let requestText = $derived.by(() => {
