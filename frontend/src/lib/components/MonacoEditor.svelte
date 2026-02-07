@@ -112,6 +112,11 @@
 					const text = model.getValue();
 					const entryLines = findHurlEntries(text);
 
+					// If no entries found, return empty
+					if (entryLines.length === 0) {
+						return { lenses: [], dispose: () => {} };
+					}
+
 					// Clear previous command disposables
 					commandDisposables.forEach((d) => d.dispose());
 					commandDisposables = [];
