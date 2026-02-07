@@ -100,15 +100,20 @@
 	);
 
 	// Render markdown content with resolved paths (using utility)
-	let renderedMarkdown = $derived.by(() => {
+	let renderedMarkdown = $state('');
+
+	$effect(() => {
 		if (isMarkdownFile && editorContent && fileStore.currentFile) {
 			const baseDir = fileStore.currentFile.path.substring(
 				0,
 				fileStore.currentFile.path.lastIndexOf('/')
 			);
-			return renderMarkdown(editorContent, baseDir);
+			renderMarkdown(editorContent, baseDir).then((html) => {
+				renderedMarkdown = html;
+			});
+		} else {
+			renderedMarkdown = '';
 		}
-		return '';
 	});
 
 	async function handleContentChange(newContent: string) {
