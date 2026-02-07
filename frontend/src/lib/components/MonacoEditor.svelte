@@ -89,7 +89,8 @@
 			wordWrap: 'on',
 			codeLens: true,
 			links: false,
-			folding: false,
+			folding: true, // Enable code folding (collapse/expand blocks)
+			glyphMargin: false, // Disable document symbols
 			hover: {
 				enabled: true
 			}
