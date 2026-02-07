@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Response } from '../../app.d.ts';
+	// Using global App.Response type from app.d.ts
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { GetResponseBody } from '$lib/wailsjs/go/main/App';
 	import { fileStore } from '$lib/stores/fileStore.svelte';
@@ -11,7 +11,7 @@
 	import Copy from '@lucide/svelte/icons/copy';
 	import { getHttpStatusColorClass } from '$lib/utils/httpStatus';
 
-	let { response }: { response: Response } = $props();
+	let { response }: { response: App.Response } = $props();
 
 	let actualBody = $state<string>('');
 	let isLoadingBody = $state(false);

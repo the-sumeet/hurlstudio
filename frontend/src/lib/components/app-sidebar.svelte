@@ -18,7 +18,9 @@
 	import { themeStore } from '$lib/stores/themeStore.svelte';
 	import { page } from '$app/stores';
 	import { Kbd } from '$lib/components/ui/kbd/index.js';
-	import { toast } from 'svelte-sonner';
+	// New utilities
+	import { hasValidExtension, getExtensionValidationError } from '$lib/utils/fileExtensions';
+	import { handleError, handleSuccess } from '$lib/utils/errorHandler';
 	import {
 		CreateFile,
 		CreateDir,
@@ -74,13 +76,8 @@
 			if (createType === 'file') {
 				// Validate file extension
 				const fileName = createInputValue.trim();
-				const validExtensions = ['.md', '.markdown', '.hurl'];
-				const hasValidExtension = validExtensions.some((ext) =>
-					fileName.toLowerCase().endsWith(ext)
-				);
-
-				if (!hasValidExtension) {
-					createError = 'Invalid file extension. File must end with .md, .markdown, or .hurl';
+				if (!hasValidExtension(fileName)) {
+					createError = getExtensionValidationError();
 					return;
 				}
 
@@ -101,7 +98,7 @@
 
 				// Trigger a refresh of the file list
 				window.dispatchEvent(new CustomEvent('refresh-files'));
-				toast.success(`File "${fileName}" created successfully`);
+				handleSuccess(`File "${fileName}" created successfully`);
 			} else {
 				// Create folder - no validation needed
 				await CreateDir(createInputValue.trim());
@@ -115,7 +112,7 @@
 
 				// Trigger a refresh of the file list
 				window.dispatchEvent(new CustomEvent('refresh-files'));
-				toast.success(`Folder "${createInputValue.trim()}" created successfully`);
+				handleSuccess(`Folder "${createInputValue.trim()}" created successfully`);
 			}
 
 			// Reset state
@@ -123,11 +120,8 @@
 			createInputValue = '';
 			createError = '';
 		} catch (error) {
-			console.error(`Failed to create ${createType}:`, error);
 			createError = `Failed to create ${createType}: ${error}`;
-			toast.error(`Failed to create ${createType}`, {
-				description: error instanceof Error ? error.message : String(error)
-			});
+			handleError(error, `Failed to create ${createType}`);
 		}
 	}
 

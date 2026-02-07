@@ -12,9 +12,16 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as NativeSelect from '$lib/components/ui/native-select/index.js';
 	import Call from '$lib/components/Call.svelte';
-	import { marked } from 'marked';
 	import { Kbd } from '$lib/components/ui/kbd/index.js';
-	import { toast } from 'svelte-sonner';
+	// New utilities
+	import {
+		isHurlFile as checkIsHurlFile,
+		isMarkdownFile as checkIsMarkdownFile,
+		getEditorLanguage
+	} from '$lib/utils/fileExtensions';
+	import { handleError, handleSuccess } from '$lib/utils/errorHandler';
+	import { renderMarkdown } from '$lib/utils/markdown';
+	import { EDITOR_CONFIG } from '$lib/constants';
 
 	let editorContent = $derived(fileStore.content);
 	let output = $state('');
@@ -57,10 +64,7 @@
 				output = '';
 			}
 		} catch (error) {
-			console.error('Failed to load existing report:', error);
-			toast.error('Failed to load report', {
-				description: error instanceof Error ? error.message : String(error)
-			});
+			handleError(error, 'Failed to load report');
 		}
 	}
 
@@ -72,75 +76,37 @@
 		return null;
 	});
 
-	// Determine language based on file extension
+	// Determine language based on file extension (using utility)
 	let language = $derived.by(() => {
 		if (!fileStore.currentFile) return 'plaintext';
-		const ext = fileStore.currentFile.name.split('.').pop()?.toLowerCase();
-		if (ext === 'md' || ext === 'markdown') return 'markdown';
-		if (ext === 'hurl') return 'plaintext'; // We can add custom Hurl syntax later
-		return 'plaintext';
+		return getEditorLanguage(fileStore.currentFile.name);
 	});
 
-	// Check if current file is markdown
+	// Check if current file is markdown (using utility)
 	let isMarkdownFile = $derived.by(() => {
 		if (!fileStore.currentFile) return false;
-		const ext = fileStore.currentFile.name.split('.').pop()?.toLowerCase();
-		return ext === 'md' || ext === 'markdown';
+		return checkIsMarkdownFile(fileStore.currentFile.name);
 	});
 
-	// Check if current file is a Hurl file
+	// Check if current file is a Hurl file (using utility)
 	let isHurlFile = $derived.by(() => {
 		if (!fileStore.currentFile) return false;
-		const ext = fileStore.currentFile.name.split('.').pop()?.toLowerCase();
-		return ext === 'hurl';
+		return checkIsHurlFile(fileStore.currentFile.name);
 	});
 
 	// Determine editor theme based on current theme
-	let editorTheme = $derived(themeStore.current === 'dark' ? 'vs-dark' : 'vs');
+	let editorTheme = $derived(
+		themeStore.current === 'dark' ? EDITOR_CONFIG.THEMES.DARK : EDITOR_CONFIG.THEMES.LIGHT
+	);
 
-	// Render markdown content with resolved paths
+	// Render markdown content with resolved paths (using utility)
 	let renderedMarkdown = $derived.by(() => {
 		if (isMarkdownFile && editorContent && fileStore.currentFile) {
-			// Configure marked to use a custom renderer for images
-			const renderer = new marked.Renderer();
 			const baseDir = fileStore.currentFile.path.substring(
 				0,
 				fileStore.currentFile.path.lastIndexOf('/')
 			);
-
-			renderer.image = ({ href, title, text }) => {
-				// Resolve relative paths to absolute paths
-				let resolvedHref = href || '';
-				if (
-					typeof href === 'string' &&
-					href &&
-					!href.startsWith('http://') &&
-					!href.startsWith('https://') &&
-					!href.startsWith('data:')
-				) {
-					// Handle relative paths
-					if (href.startsWith('./') || href.startsWith('../') || !href.startsWith('/')) {
-						// Resolve relative to the markdown file's directory
-						const parts = href.split('/');
-						const dirParts = baseDir.split('/');
-
-						for (const part of parts) {
-							if (part === '..') {
-								dirParts.pop();
-							} else if (part !== '.' && part !== '') {
-								dirParts.push(part);
-							}
-						}
-
-						resolvedHref = dirParts.join('/');
-					}
-				}
-
-				const titleAttr = title ? ` title="${title}"` : '';
-				return `<img src="${resolvedHref}" alt="${text || ''}"${titleAttr}>`;
-			};
-
-			return marked(editorContent, { renderer });
+			return renderMarkdown(editorContent, baseDir);
 		}
 		return '';
 	});
@@ -153,11 +119,8 @@
 				fileStore.setContent(newContent);
 				fileStore.setSaveStatus('saved');
 			} catch (error) {
-				console.error('Failed to save file:', error);
 				fileStore.setSaveStatus('unsaved');
-				toast.error('Failed to save file', {
-					description: error instanceof Error ? error.message : String(error)
-				});
+				handleError(error, 'Failed to save file');
 			}
 		}
 	}
@@ -180,7 +143,7 @@
 				// Hurl returns an array with a single report
 				if (Array.isArray(parsed) && parsed.length > 0) {
 					report = parsed[0];
-					toast.success('Hurl executed successfully');
+					handleSuccess('Hurl executed successfully');
 				}
 			} catch (e) {
 				// Not a JSON response, keep as plain text
@@ -188,10 +151,7 @@
 			}
 		} catch (error) {
 			output = `Error: ${error}`;
-			console.error('Failed to run hurl:', error);
-			toast.error('Failed to run Hurl', {
-				description: error instanceof Error ? error.message : String(error)
-			});
+			handleError(error, 'Failed to run Hurl');
 		} finally {
 			isRunning = false;
 		}
@@ -224,10 +184,7 @@
 			}
 		} catch (error) {
 			output = `Error: ${error}`;
-			console.error('Failed to run hurl entry:', error);
-			toast.error('Failed to run Hurl entry', {
-				description: error instanceof Error ? error.message : String(error)
-			});
+			handleError(error, 'Failed to run Hurl entry');
 		} finally {
 			isRunning = false;
 		}

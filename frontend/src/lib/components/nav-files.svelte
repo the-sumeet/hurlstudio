@@ -30,6 +30,9 @@
 	import FolderUp from '@lucide/svelte/icons/folder-up';
 	import { fileStore } from '$lib/stores/fileStore.svelte';
 	import type { FileEntry, CurrentFilesState } from '$lib/types/file';
+	// New utilities
+	import { hasValidExtension, getExtensionValidationError } from '$lib/utils/fileExtensions';
+	import { handleError, handleSuccess } from '$lib/utils/errorHandler';
 
 	let files = $state<FileEntry[]>([]);
 	let currentState = $state<CurrentFilesState>({});
@@ -113,8 +116,7 @@
 			deleteDialogOpen = false;
 			fileToDelete = null;
 		} catch (error) {
-			console.error('Failed to delete file:', error);
-			alert(`Failed to delete: ${error}`);
+			handleError(error, 'Failed to delete file');
 		}
 	}
 
@@ -160,13 +162,8 @@
 		// Validate file extension if it's a file (not a directory)
 		if (!fileToRename.isDirectory) {
 			const trimmedName = newFileName.trim();
-			const validExtensions = ['.md', '.markdown', '.hurl'];
-			const hasValidExtension = validExtensions.some((ext) =>
-				trimmedName.toLowerCase().endsWith(ext)
-			);
-
-			if (!hasValidExtension) {
-				renameError = 'Invalid file extension. File must end with .md, .markdown, or .hurl';
+			if (!hasValidExtension(trimmedName)) {
+				renameError = getExtensionValidationError();
 				return;
 			}
 		}

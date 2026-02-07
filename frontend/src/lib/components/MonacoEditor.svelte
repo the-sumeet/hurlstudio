@@ -2,10 +2,8 @@
 	import { onMount, onDestroy } from 'svelte';
 	import * as monaco from 'monaco-editor';
 	import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
-	import {
-		GetFlattenedVariables,
-		GetActiveEnvironment
-	} from '$lib/wailsjs/go/main/App';
+	import { GetFlattenedVariables, GetActiveEnvironment } from '$lib/wailsjs/go/main/App';
+	import { EDITOR_CONFIG } from '$lib/constants';
 
 	interface Props {
 		value?: string;
@@ -85,7 +83,7 @@
 			theme: theme,
 			readOnly: readonly,
 			automaticLayout: true,
-			fontSize: 14,
+			fontSize: EDITOR_CONFIG.FONT_SIZE,
 			minimap: { enabled: false },
 			scrollBeyondLastLine: false,
 			wordWrap: 'on',
@@ -235,9 +233,7 @@
 									position.lineNumber,
 									position.column + afterMatch[1].length + 2
 								),
-								contents: [
-									{ value: `**${variableName}**: \`${variables[variableName]}\`` }
-								]
+								contents: [{ value: `**${variableName}**: \`${variables[variableName]}\`` }]
 							};
 						} else {
 							return {
@@ -247,9 +243,7 @@
 									position.lineNumber,
 									position.column + afterMatch[1].length + 2
 								),
-								contents: [
-									{ value: `**${variableName}**: _Variable not defined_` }
-								]
+								contents: [{ value: `**${variableName}**: _Variable not defined_` }]
 							};
 						}
 					} catch (error) {
