@@ -57,7 +57,7 @@ function escapeHtml(text: string): string {
 }
 
 
-export function renderMarkdown(content: string, baseDir: string): string {
+export async function renderMarkdown(content: string, baseDir: string): Promise<string> {
     const renderer = createMarkdownRenderer(baseDir);
-    return marked(content, { renderer });
+    return await marked(content, { renderer });
 }
