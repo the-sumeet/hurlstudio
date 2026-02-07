@@ -7,7 +7,6 @@
 	import FilePlus from '@lucide/svelte/icons/file-plus';
 	import FolderPlus from '@lucide/svelte/icons/folder-plus';
 	import Braces from '@lucide/svelte/icons/braces';
-	import * as InputGroup from '$lib/components/ui/input-group/index.js';
 	import * as ButtonGroup from '$lib/components/ui/button-group/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Button } from './ui/button';
@@ -18,6 +17,8 @@
 	import { themeStore } from '$lib/stores/themeStore.svelte';
 	import { page } from '$app/stores';
 	import { Kbd } from '$lib/components/ui/kbd/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
 	// New utilities
 	import { hasValidExtension, getExtensionValidationError } from '$lib/utils/fileExtensions';
 	import { handleError, handleSuccess } from '$lib/utils/errorHandler';
@@ -32,43 +33,29 @@
 
 	let { ref = $bindable(null), ...restProps }: ComponentProps<typeof Sidebar.Root> = $props();
 
-	// State for create new file/folder
-	let showCreateInput = $state(false);
+	// State for create new file/folder dialog
+	let dialogOpen = $state(false);
 	let createInputValue = $state('');
-	let createType = $state<'file' | 'folder'>('file'); // Track if creating file or folder
+	let createType = $state<'file' | 'folder'>('file');
 	let createError = $state('');
-	let createInput: HTMLInputElement | null = null;
-
-	// Auto-focus input when shown
-	$effect(() => {
-		if (showCreateInput && createInput) {
-			createInput.focus();
-		}
-	});
 
 	function handleNewFileClick() {
 		createType = 'file';
-		showCreateInput = true;
+		dialogOpen = true;
 		createInputValue = '';
 		createError = '';
 	}
 
 	function handleNewFolderClick() {
 		createType = 'folder';
-		showCreateInput = true;
-		createInputValue = '';
-		createError = '';
-	}
-
-	function handleCancel() {
-		showCreateInput = false;
+		dialogOpen = true;
 		createInputValue = '';
 		createError = '';
 	}
 
 	async function handleCreateDone() {
 		if (!createInputValue.trim()) {
-			showCreateInput = false;
+			dialogOpen = false;
 			return;
 		}
 
@@ -115,8 +102,8 @@
 				handleSuccess(`Folder "${createInputValue.trim()}" created successfully`);
 			}
 
-			// Reset state
-			showCreateInput = false;
+			// Reset state and close dialog
+			dialogOpen = false;
 			createInputValue = '';
 			createError = '';
 		} catch (error) {
@@ -133,23 +120,17 @@
 
 	// Handle keyboard shortcuts
 	function handleKeydown(event: KeyboardEvent) {
-		// ESC to cancel create input
-		if (event.key === 'Escape' && showCreateInput) {
-			handleCancel();
-			return;
-		}
-
 		// Cmd+N (Mac) or Ctrl+N (Windows/Linux) for new file
 		if ((event.metaKey || event.ctrlKey) && event.key === 'n' && !event.shiftKey) {
 			event.preventDefault();
-			if (!showCreateInput) {
+			if (!dialogOpen) {
 				handleNewFileClick();
 			}
 		}
 		// Cmd+Shift+N (Mac) or Ctrl+Shift+N (Windows/Linux) for new folder
 		if ((event.metaKey || event.ctrlKey) && event.key === 'n' && event.shiftKey) {
 			event.preventDefault();
-			if (!showCreateInput) {
+			if (!dialogOpen) {
 				handleNewFolderClick();
 			}
 		}
@@ -286,52 +267,76 @@
 			</Sidebar.Footer> -->
 			<Sidebar.Rail />
 			<Sidebar.Footer class="p-2">
-				{#if showCreateInput}
-					<div class="flex flex-col gap-2">
-						<InputGroup.Root>
-							<InputGroup.Input
-								bind:ref={createInput}
-								placeholder={createType === 'file' ? 'Enter file name...' : 'Enter folder name...'}
-								bind:value={createInputValue}
-								autocapitalize="off"
-								autocomplete="off"
-								autocorrect="off"
-								spellcheck="false"
-							/>
-							<InputGroup.Addon align="inline-end">
-								<InputGroup.Button onclick={handleCreateDone}>Done</InputGroup.Button>
-							</InputGroup.Addon>
-						</InputGroup.Root>
-						{#if createError}
-							<div class="px-2 text-xs text-destructive">
-								{createError}
-							</div>
-						{/if}
-						<Button class="w-full gap-2" variant="outline" onclick={handleCancel}
-							>Cancel <Kbd>ESC</Kbd></Button
-						>
-					</div>
-				{:else}
-					<ButtonGroup.Root class="flex w-full">
-						<Button
-							class="flex-1 flex-col gap-1 p-2"
-							variant="outline"
-							onclick={handleNewFileClick}
-						>
-							<FilePlus class="h-4 w-4" />
-							<Kbd class="text-[8px]">{isMac ? '⌘N' : 'Ctrl+N'}</Kbd>
-						</Button>
-						<Button
-							class="flex-1 flex-col gap-1 p-2"
-							variant="outline"
-							onclick={handleNewFolderClick}
-						>
-							<FolderPlus class="h-4 w-4" />
-							<Kbd class="text-[8px]">{isMac ? '⌘⇧N' : 'Ctrl+⇧N'}</Kbd>
-						</Button>
-					</ButtonGroup.Root>
-				{/if}
+				<ButtonGroup.Root class="flex w-full">
+					<Button class="flex-1 flex-col gap-1 p-2" variant="outline" onclick={handleNewFileClick}>
+						<FilePlus class="h-4 w-4" />
+						<Kbd class="text-[8px]">{isMac ? '⌘N' : 'Ctrl+N'}</Kbd>
+					</Button>
+					<Button
+						class="flex-1 flex-col gap-1 p-2"
+						variant="outline"
+						onclick={handleNewFolderClick}
+					>
+						<FolderPlus class="h-4 w-4" />
+						<Kbd class="text-[8px]">{isMac ? '⌘⇧N' : 'Ctrl+⇧N'}</Kbd>
+					</Button>
+				</ButtonGroup.Root>
 			</Sidebar.Footer>
 		</Sidebar.Root>
 	{/if}
 </Sidebar.Root>
+
+<!-- Create File/Folder Dialog -->
+<Dialog.Root bind:open={dialogOpen}>
+	<Dialog.Content class="sm:max-w-md">
+		<Dialog.Header>
+			<Dialog.Title>
+				{createType === 'file' ? 'Create New File' : 'Create New Folder'}
+			</Dialog.Title>
+			<Dialog.Description>
+				{createType === 'file'
+					? 'Enter a name for your new file. Supported extensions: .hurl, .md, .markdown'
+					: 'Enter a name for your new folder.'}
+			</Dialog.Description>
+		</Dialog.Header>
+
+		<div class="grid gap-4 py-4">
+			<div class="grid gap-2">
+				<Label for="name">
+					{createType === 'file' ? 'File name' : 'Folder name'}
+				</Label>
+				<Input
+					id="name"
+					bind:value={createInputValue}
+					placeholder={createType === 'file' ? 'example.hurl' : 'my-folder'}
+					autocapitalize="off"
+					autocomplete="off"
+					autocorrect="off"
+					spellcheck="false"
+					onkeydown={(e) => {
+						if (e.key === 'Enter') {
+							handleCreateDone();
+						}
+					}}
+				/>
+				{#if createError}
+					<p class="text-sm text-destructive">{createError}</p>
+				{/if}
+			</div>
+		</div>
+
+		<Dialog.Footer>
+			<Button
+				type="button"
+				variant="outline"
+				onclick={() => {
+					dialogOpen = false;
+					createError = '';
+				}}
+			>
+				Cancel
+			</Button>
+			<Button type="button" onclick={handleCreateDone}>Create</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
