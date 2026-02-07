@@ -1,8 +1,5 @@
 import { toast } from 'svelte-sonner';
 
-/**
- * Standard error handler for the application
- */
 export class AppError extends Error {
     constructor(
         message: string,
@@ -14,9 +11,7 @@ export class AppError extends Error {
     }
 }
 
-/**
- * Handle errors consistently across the application
- */
+
 export function handleError(error: unknown, context?: string): void {
     console.error(context ? `[${context}]` : '', error);
 
@@ -41,9 +36,7 @@ export function handleError(error: unknown, context?: string): void {
     });
 }
 
-/**
- * Handle success messages consistently
- */
+
 export function handleSuccess(message: string, description?: string): void {
     toast.success(message, {
         description
