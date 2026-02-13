@@ -27,6 +27,7 @@
 	let output = $state('');
 	let isRunning = $state(false);
 	let report = $state<App.HurlReport | null>(null);
+	$inspect(report)
 	let selectedEntryIndex = $state(0);
 
 	// Load existing report when file changes
@@ -310,9 +311,9 @@
 
 						<div class="flex min-h-0 flex-1 snap-y snap-mandatory flex-col gap-2 overflow-y-auto">
 							{#if selectedEntry && selectedEntry.calls.length > 0}
-								{#each selectedEntry.calls as call}
+								{#each selectedEntry.calls as call, i}
 									<div class="h-full snap-start">
-										<Call {call} />
+										<Call {call} asserts={i === selectedEntry.calls.length - 1 ? selectedEntry.asserts : []} />
 									</div>
 								{/each}
 							{:else if output}
