@@ -10,6 +10,7 @@
 		language?: string;
 		theme?: string;
 		readonly?: boolean;
+		disableFind?: boolean;
 		onchange?: (newValue: string) => void;
 		onRunEntry?: (entryIndex: number) => void;
 	}
@@ -19,6 +20,7 @@
 		language = 'plaintext',
 		theme = 'vs-dark',
 		readonly = false,
+		disableFind = false,
 		onchange = undefined,
 		onRunEntry = undefined
 	}: Props = $props();
@@ -95,6 +97,15 @@
 				enabled: true
 			}
 		});
+
+		// Disable Cmd+F / Ctrl+F find widget if requested
+		if (disableFind) {
+			editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyF, () => {
+				window.dispatchEvent(
+					new KeyboardEvent('keydown', { key: 'f', metaKey: true, bubbles: true })
+				);
+			});
+		}
 
 		// Listen to content changes
 		editor.onDidChangeModelContent(() => {
