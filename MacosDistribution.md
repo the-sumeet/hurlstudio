@@ -84,6 +84,13 @@ Architectures in the fat file: ... are: x86_64 arm64
 
 ## Sign the App
 
+Get codesigning identifies
+
+```
+security find-identity -v -p codesigning
+
+```
+
 Sign with hardened runtime, which is required for notarization:
 
 ```
