@@ -7,7 +7,6 @@
 	import { Kbd } from '$lib/components/ui/kbd/index.js';
 	import Wand from '@lucide/svelte/icons/wand';
 
-
 	let value = $state('');
 	let format = $state('json');
 	let language = $derived(format === 'json' ? 'json' : 'html');
@@ -84,6 +83,6 @@
 			<NativeSelect.Option value="json">JSON</NativeSelect.Option>
 			<NativeSelect.Option value="html">HTML</NativeSelect.Option>
 		</NativeSelect.Root>
-<Button href="/" variant="outline" class="gap-2">Close <Kbd>ESC</Kbd></Button>
+		<Button href="/" variant="outline" class="gap-2">Close <Kbd>ESC</Kbd></Button>
 	</Card.Footer>
 </Card.Root>

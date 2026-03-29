@@ -50,7 +50,9 @@
 							<Tabs.Trigger value="asserts">
 								Asserts
 								{#if hasFailedAsserts}
-									<span class="ml-1 rounded-full bg-destructive px-1.5 py-0.5 text-xs text-destructive-foreground">
+									<span
+										class="text-destructive-foreground ml-1 rounded-full bg-destructive px-1.5 py-0.5 text-xs"
+									>
 										{asserts.filter((a) => !a.success).length}
 									</span>
 								{/if}
@@ -76,7 +78,9 @@
 									{#if assert.success}
 										<Alert.Root variant="default" class="border-green-500/40 bg-green-500/5">
 											<CircleCheck class="h-4 w-4 text-green-500" />
-											<Alert.Title class="text-green-700 dark:text-green-400">Pass — Line {assert.line}</Alert.Title>
+											<Alert.Title class="text-green-700 dark:text-green-400"
+												>Pass — Line {assert.line}</Alert.Title
+											>
 										</Alert.Root>
 									{:else}
 										<Alert.Root variant="destructive">
@@ -84,7 +88,8 @@
 											<Alert.Title>Fail — Line {assert.line}</Alert.Title>
 											{#if assert.message}
 												<Alert.Description>
-													<pre class="mt-1 overflow-x-auto whitespace-pre-wrap text-xs">{assert.message}</pre>
+													<pre
+														class="mt-1 overflow-x-auto text-xs whitespace-pre-wrap">{assert.message}</pre>
 												</Alert.Description>
 											{/if}
 										</Alert.Root>

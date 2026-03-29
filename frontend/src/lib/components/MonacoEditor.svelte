@@ -88,7 +88,8 @@
 			fontSize: EDITOR_CONFIG.FONT_SIZE,
 			minimap: { enabled: false },
 			scrollBeyondLastLine: false,
-			wordWrap: 'on',
+			// Prefer horizontal scrolling over wrapping so long lines stay intact.
+			wordWrap: 'off',
 			codeLens: true,
 			links: false,
 			folding: true, // Enable code folding (collapse/expand blocks)
