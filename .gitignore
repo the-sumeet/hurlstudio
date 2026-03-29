@@ -4,3 +4,4 @@ frontend/dist
 sample.hurl
 binaries/
 MacosDistribution copy.md
+hurlstudio_notarize.zip
