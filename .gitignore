@@ -3,3 +3,4 @@ node_modules
 frontend/dist
 sample.hurl
 binaries/
+MacosDistribution copy.md
